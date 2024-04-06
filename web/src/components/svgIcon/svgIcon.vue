@@ -33,7 +33,9 @@ const svgClass = computed(() => {
 <style scoped>
 .svg-icon {
   @apply w-4 h-4;
+  display: inline-block;
   fill: currentColor;
-  vertical-align: middle;
+  /* vertical-align: -0.15em; */
+   vertical-align: middle;
 }
 </style>

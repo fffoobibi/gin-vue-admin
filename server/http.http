@@ -1,0 +1,5 @@
+### GET request with cookie passed through headers
+GET http://127.0.0.1:8888/tblCrawlStats/getFirstCrawlInfo?st_time=2024-04-07&ed_time=2024-04-08
+Accept: application/json
+X-User-Id: 1
+X-Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVVUlEIjoiNTkyYzFiYzYtZWJhYS00NWNjLThkZGQtMTMwMmEzOGFkODdmIiwiSUQiOjEsIlVzZXJuYW1lIjoiYWRtaW4iLCJOaWNrTmFtZSI6Ik1yLuWlh-a3vCIsIkF1dGhvcml0eUlkIjo5NTI4LCJCdWZmZXJUaW1lIjo4NjQwMCwiaXNzIjoicW1QbHVzIiwiYXVkIjpbIkdWQSJdLCJleHAiOjE3MTI4NDYwMjIsIm5iZiI6MTcxMjI0MTIyMn0.xZ--zH95OPeeGaf8pxXwVIVC1MlOyVaelAHyFXWVOv0
