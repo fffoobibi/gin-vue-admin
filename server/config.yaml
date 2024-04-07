@@ -128,7 +128,7 @@ mysql:
     password: b=!@#--pfdnzzxsj2kdgjm
     path: 36.32.174.26
     engine: ""
-    log-mode: info
+    log-mode: warn
     max-idle-conns: 10
     max-open-conns: 100
     singular: false
