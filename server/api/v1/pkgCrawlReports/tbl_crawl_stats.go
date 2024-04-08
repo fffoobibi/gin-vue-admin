@@ -168,15 +168,30 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetFirstCrawlInfo(c *gin.Context) {
 }
 
 // GetTotalResourceInfo 获取初次抓取统计数量
-// @Router /tblCrawlStats/GetTotalResourceInfo [get]
+// @Router /tblCrawlStats/getTotalResourceInfo [get]
 func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceInfo(c *gin.Context) {
 
 	// mock
 	data := gin.H{
-		"total":   354710,
-		"Tiktok":  177800,
-		"Youtube": 84123,
-		"INS":     22344,
+		"total":     354710,
+		"Tiktok":    177800,
+		"Youtube":   84123,
+		"Instagram": 22344,
+	}
+	response.OkWithDetailed(data, "获取成功", c)
+}
+
+// GetCrawlStatsPieData 获取饼图数据
+// @Router /tblCrawlStats/getCrawlStatsPieData [get]
+func (tblCrawlStatsApi *TblCrawlStatsApi) GetCrawlStatsPieData(c *gin.Context) {
+
+	global.GVA_DBList["mysql"].Select()
+	// mock
+	data := gin.H{
+		//"country":   {},
+		"country":  []gin.H{gin.H{"us": 50, "jp": 100, "bri": 1202}},
+		"platform": 84123,
+		"category": 22344,
 	}
 	response.OkWithDetailed(data, "获取成功", c)
 }

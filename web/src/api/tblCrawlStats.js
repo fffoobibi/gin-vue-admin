@@ -125,3 +125,18 @@ export const getTotalResourceInfo = (params) => {
     params
   })
 }
+
+// @Tags TblCrawlStats
+// @Summary 获取饼图数据
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /tblCrawlStats/getCrawlStatsPieData [get]
+export const getCrawlStatsPieData = (params) => {
+  return service({
+    url: '/tblCrawlStats/getCrawlStatsPieData',
+    method: 'get',
+    params
+  })
+}

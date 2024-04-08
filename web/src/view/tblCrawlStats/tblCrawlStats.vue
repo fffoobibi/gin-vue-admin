@@ -54,7 +54,7 @@
     </el-row>
 
     <el-row justify="center">
-      <el-card style="width: 1290px;margin-top: 20px; height: 700px;" class="radius-10" body-class="no-padding">
+      <el-card style="width: 1290px;margin-top: 20px; min-height: 800px;" class="radius-10" body-class="no-padding">
         <el-row justify="space-between" align="middle" class="padding-5 report-header">
           <el-col :span="4">
             <h3>
@@ -101,6 +101,29 @@
         </div>
         <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">*注:抓取数据是根据链接的总数量计算</p>
         <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current" />
+
+        <el-row :gutter="20" style="margin-left: 10px;margin-right: 10px; margin-top: 10px;">
+          <el-col :span="8">
+            <el-card style="height: 200px" shadow="hover">
+              <div ref="c4"></div>
+
+            </el-card>
+          </el-col>
+
+          <el-col :span="8">
+            <el-card style="height: 200px" shadow="hover">
+              <div ref="c5"></div>
+            </el-card>
+          </el-col>
+
+          <el-col :span="8">
+            <el-card style="height: 200px" shadow="hover">
+              <div ref="c6"></div>
+            </el-card>
+          </el-col>
+
+        </el-row>
+
       </el-card>
     </el-row>
 
@@ -112,7 +135,7 @@
 // 全量引入格式化工具 请按需保留
 import { reactive, ref, onMounted, nextTick } from 'vue'
 import { formatTimeToStr } from '@/utils/date'
-import { getTotalResourceInfo } from '@/api/tblCrawlStats'
+import { getTotalResourceInfo, getCrawlStatsPieData } from '@/api/tblCrawlStats'
 import * as echarts from 'echarts'
 import LineReports from '@/view/tblCrawlStats/LineReports/lineReports.vue'
 
@@ -326,15 +349,191 @@ const setTotalPies = (data) => {
     })
 }
 
+const c4 = ref(null)
+const c5 = ref(null)
+const c6 = ref(null)
+let chat4 = null
+let chat5 = null
+let chat6 = null
+
+const setFooterPies = (data, reportType = 0) => {
+  if (chat4 === null) {
+    chat4 = echarts.init(c4.value)
+  }
+  chat4.setOption(
+    {
+      legend: {
+        orient: 'vertical',
+        x: 'right',
+        y: '20%',
+        itemWidth: 0,
+        textStyle: {
+          color: '#fff',
+          fontSize: 12,
+        },
+        selectedMode: false, //取消图例上的点击事件
+
+      },
+      formatter: (name) => {
+        let data = ''
+        if (name === 'Tiktok') {
+          data = (Number(totalResourceInfo.Tiktok / totalResourceInfo.total_count) * 100).toFixed()
+          const text = `${name} ${data}%`
+          return `${text}`
+        }
+      },
+      color: ['#FF9600', '#72B9FF'],
+      series: [
+        {
+          type: 'pie',
+          data: [
+            {
+              value: totalResourceInfo.Tiktok,
+              name: 'Tiktok',
+              label: {
+                show: false,
+              },
+            },
+            {
+              value: totalResourceInfo.Youtube + totalResourceInfo.Instagram,
+              name: ''
+            }
+          ],
+          radius: ['40%', '70%'],
+          labelLine: {
+            show: false
+          }
+        },
+
+      ]
+    })
+
+  if (chat5 === null) {
+    chat5 = echarts.init(c5.value)
+  }
+  chat5.setOption(
+    {
+      // tooltip: {
+      //   trigger: 'item',
+      //   formatter: function (params) {
+      //     return `${params.value} 占比%`
+      //   }
+      // },
+      legend: {
+        orient: 'vertical',
+        x: 'right',
+        y: '20%',
+        itemWidth: 0,
+        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
+        textStyle: {
+          color: '#fff',
+          fontSize: 12,
+        },
+        selectedMode: false
+      },
+      formatter: (name) => {
+        let data = ''
+        if (name === 'Youtube') {
+          data = (Number(totalResourceInfo.Youtube / totalResourceInfo.total_count) * 100).toFixed()
+          const text = `${name} ${data}%`
+          return `${text}`
+        }
+      },
+      color: ['#FF9600', '#72B9FF'],
+      series: [
+        {
+          type: 'pie',
+          data: [
+            {
+              value: totalResourceInfo.Youtube,
+              name: 'Youtube'
+            },
+            {
+              value: totalResourceInfo.Tiktok + totalResourceInfo.Instagram,
+              name: ''
+            }
+          ],
+          radius: ['40%', '70%'],
+          labelLine: {
+            show: false
+          },
+          label: {
+            show: false,
+          },
+        }
+      ]
+    })
+
+  if (chat6 === null) {
+    chat6 = echarts.init(c6.value)
+  }
+  chat6.setOption(
+    {
+      legend: {
+        orient: 'vertical',
+        x: 'right',
+        y: '20%',
+        itemWidth: 0,
+        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
+        textStyle: {
+          color: '#fff',
+          fontSize: 12,
+        },
+        selectedMode: false
+      },
+      formatter: (name) => {
+        let data = ''
+        if (name === 'Instagram') {
+          data = (Number(totalResourceInfo.Instagram / totalResourceInfo.total_count) * 100).toFixed()
+          const text = `${name} ${data}%`
+          return `${text}`
+        }
+      },
+      color: ['#FF9600', '#72B9FF'],
+      series: [
+        {
+          type: 'pie',
+          data: [
+            {
+              value: totalResourceInfo.Instagram,
+              name: 'Instagram'
+            },
+            {
+              value: totalResourceInfo.Youtube + totalResourceInfo.Tiktok,
+              name: ''
+            }
+          ],
+          radius: ['40%', '70%'],
+          labelLine: {
+            show: false
+          },
+          label: {
+            show: false,
+          },
+        }
+      ]
+    })
+}
+
+
 onMounted(async () => {
   await nextTick()
-  const resp = await getTotalResourceInfo()
-  console.log('resp ==> ', resp)
-  totalResourceInfo.total_count = resp.data.total
-  totalResourceInfo.Youtube = resp.data.Youtube
-  totalResourceInfo.Instagram = resp.data.Instagram
-  totalResourceInfo.Tiktok = resp.data.Tiktok
-  setTotalPies(resp.data)
+  try {
+    const resp = await getTotalResourceInfo()
+    totalResourceInfo.total_count = resp.data.total
+    totalResourceInfo.Youtube = resp.data.Youtube
+    totalResourceInfo.Instagram = resp.data.Instagram
+    totalResourceInfo.Tiktok = resp.data.Tiktok
+    setTotalPies(resp.data)
+  } catch (error) {
+
+  }
+  try{
+    const resp = await getCrawlStatsPieData()
+  }catch(error){
+
+  }
+
 })
 
 const handleGroup = (val) => {

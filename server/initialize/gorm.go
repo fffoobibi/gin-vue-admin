@@ -52,7 +52,7 @@ func RegisterTables() {
 		example.ExaFile{},
 		example.ExaCustomer{},
 		example.ExaFileChunk{},
-		example.ExaFileUploadAndDownload{}, pkgCrawlReports.Student{}, pkgCrawlReports.TblCrawlStats{},
+		example.ExaFileUploadAndDownload{}, pkgCrawlReports.Student{}, pkgCrawlReports.TblCrawlStats{}, pkgCrawlReports.TblCrawlEvents{},
 	)
 	if err != nil {
 		global.GVA_LOG.Error("register table failed", zap.Error(err))
