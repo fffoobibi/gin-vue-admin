@@ -175,7 +175,7 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 
 	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).
 		Select("COUNT(*) as update_count").
-		Where("create_time >= ? AND create_time <= ? AND name LIKE ?", midnightTimestamp, endOfDayTimestamp, "%-update%").Scan(&rs).Error; err != nil {
+		Where("create_time >= ? AND create_time <= ? AND (name LIKE ? or name LIKE ? or name Like ?)", midnightTimestamp, endOfDayTimestamp, "%tt-update%", "%ytb-update%", "ins-update").Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query update count", zap.Error(err))
 	}
 
@@ -185,5 +185,72 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 		global.GVA_LOG.Error("error in query total count", zap.Error(err))
 	}
 
+	return rs, nil
+}
+
+// GetCleanReportsList 获取清洗列表
+func (tblCrawlStatsService *TblCrawlStatsService) GetCleanReportsList(info pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery) (map[string][]map[string]any, error) {
+	s1, _ := time.Parse("2006-01-02", info.StartTime)
+	s2, _ := time.Parse("2006-01-02", info.EndTime)
+	location, _ := time.LoadLocation("Asia/Shanghai")
+	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
+	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
+
+	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
+		zap.String("end", fmt.Sprintf("%s", endOfDay)))
+
+	midnightTimestamp := midnight.Unix()
+	endOfDayTimestamp := endOfDay.Unix()
+	conditions := map[string]uint8{"TikTok": 1, "Youtube": 2, "Instagram": 3}
+
+	var rs = map[string][]map[string]any{}
+	for k, v := range conditions {
+		var list []map[string]any
+		if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_kol_resource_clean").
+			Select("FROM_UNIXTIME(update_time, '%Y-%m-%d') as date, COUNT(*) AS count").
+			//Joins("LEFT JOIN tbl_kol_resource_clean_batch ON tbl_kol_resource_clean.batch_id = tbl_kol_resource_clean_batch.id").
+			Where("update_time >= ? AND update_time <= ? AND platform = ?",
+				midnightTimestamp, endOfDayTimestamp, v,
+			).
+			Group("date").
+			Order("date").Scan(&list).Error; err != nil {
+			global.GVA_LOG.Error("error in query "+k, zap.Error(err))
+		} else {
+			rs[k] = list
+		}
+	}
+	return rs, nil
+}
+
+// GetTotalResourceReportsList 获取总资源库更新次数
+func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(info pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery) (map[string][]map[string]any, error) {
+	s1, _ := time.Parse("2006-01-02", info.StartTime)
+	s2, _ := time.Parse("2006-01-02", info.EndTime)
+	location, _ := time.LoadLocation("Asia/Shanghai")
+	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
+	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
+
+	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
+		zap.String("end", fmt.Sprintf("%s", endOfDay)))
+
+	midnightTimestamp := midnight.Unix()
+	endOfDayTimestamp := endOfDay.Unix()
+	conditions := map[string]string{"TikTok": "%tt-update%", "Youtube": "%ytb-update%", "Instagram": "%ins-update%"}
+
+	var rs = map[string][]map[string]any{}
+	for k, v := range conditions {
+		var list []map[string]any
+		if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).
+			Select("FROM_UNIXTIME(create_time, '%Y-%m-%d') as date, COUNT(*) AS count").
+			Where("create_time >= ? AND create_time <= ? AND name LIKE ?",
+				midnightTimestamp, endOfDayTimestamp, v,
+			).
+			Group("date").
+			Order("date").Scan(&list).Error; err != nil {
+			global.GVA_LOG.Error("error in query "+k, zap.Error(err))
+		} else {
+			rs[k] = list
+		}
+	}
 	return rs, nil
 }

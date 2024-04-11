@@ -1,4 +1,4 @@
-import service from '@/utils/request'
+import service from "@/utils/request";
 
 // @Tags TblCrawlStats
 // @Summary 创建tblCrawlStats表
@@ -10,11 +10,11 @@ import service from '@/utils/request'
 // @Router /tblCrawlStats/createTblCrawlStats [post]
 export const createTblCrawlStats = (data) => {
   return service({
-    url: '/tblCrawlStats/createTblCrawlStats',
-    method: 'post',
-    data
-  })
-}
+    url: "/tblCrawlStats/createTblCrawlStats",
+    method: "post",
+    data,
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 删除tblCrawlStats表
@@ -26,11 +26,11 @@ export const createTblCrawlStats = (data) => {
 // @Router /tblCrawlStats/deleteTblCrawlStats [delete]
 export const deleteTblCrawlStats = (params) => {
   return service({
-    url: '/tblCrawlStats/deleteTblCrawlStats',
-    method: 'delete',
-    params
-  })
-}
+    url: "/tblCrawlStats/deleteTblCrawlStats",
+    method: "delete",
+    params,
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 批量删除tblCrawlStats表
@@ -42,11 +42,11 @@ export const deleteTblCrawlStats = (params) => {
 // @Router /tblCrawlStats/deleteTblCrawlStats [delete]
 export const deleteTblCrawlStatsByIds = (params) => {
   return service({
-    url: '/tblCrawlStats/deleteTblCrawlStatsByIds',
-    method: 'delete',
-    params
-  })
-}
+    url: "/tblCrawlStats/deleteTblCrawlStatsByIds",
+    method: "delete",
+    params,
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 更新tblCrawlStats表
@@ -58,11 +58,11 @@ export const deleteTblCrawlStatsByIds = (params) => {
 // @Router /tblCrawlStats/updateTblCrawlStats [put]
 export const updateTblCrawlStats = (data) => {
   return service({
-    url: '/tblCrawlStats/updateTblCrawlStats',
-    method: 'put',
-    data
-  })
-}
+    url: "/tblCrawlStats/updateTblCrawlStats",
+    method: "put",
+    data,
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 用id查询tblCrawlStats表
@@ -74,11 +74,11 @@ export const updateTblCrawlStats = (data) => {
 // @Router /tblCrawlStats/findTblCrawlStats [get]
 export const findTblCrawlStats = (params) => {
   return service({
-    url: '/tblCrawlStats/findTblCrawlStats',
-    method: 'get',
-    params
-  })
-}
+    url: "/tblCrawlStats/findTblCrawlStats",
+    method: "get",
+    params,
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 分页获取tblCrawlStats表列表
@@ -90,11 +90,11 @@ export const findTblCrawlStats = (params) => {
 // @Router /tblCrawlStats/getTblCrawlStatsList [get]
 export const getTblCrawlStatsList = (params) => {
   return service({
-    url: '/tblCrawlStats/getTblCrawlStatsList',
-    method: 'get',
-    params
-  })
-}
+    url: "/tblCrawlStats/getTblCrawlStatsList",
+    method: "get",
+    params,
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 获取首次访问次数
@@ -105,11 +105,11 @@ export const getTblCrawlStatsList = (params) => {
 // @Router /tblCrawlStats/getFirstCrawlInfo [get]
 export const getFirstCrawlInfo = (params) => {
   return service({
-    url: '/tblCrawlStats/getFirstCrawlInfo',
-    method: 'get',
+    url: "/tblCrawlStats/getFirstCrawlInfo",
+    method: "get",
     params,
-  })
-}
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 获取总数量, 饼图数据
@@ -120,11 +120,11 @@ export const getFirstCrawlInfo = (params) => {
 // @Router /tblCrawlStats/getTotalResourceInfo [get]
 export const getTotalResourceInfo = (params) => {
   return service({
-    url: '/tblCrawlStats/getTotalResourceInfo',
-    method: 'get',
+    url: "/tblCrawlStats/getTotalResourceInfo",
+    method: "get",
     params,
-  })
-}
+  });
+};
 
 // @Tags TblCrawlStats
 // @Summary 获取饼图数据
@@ -135,8 +135,52 @@ export const getTotalResourceInfo = (params) => {
 // @Router /tblCrawlStats/getCrawlStatsPieData [get]
 export const getCrawlStatsPieData = (params) => {
   return service({
-    url: '/tblCrawlStats/getCrawlStatsPieData',
-    method: 'get',
-    params
-  })
-}
+    url: "/tblCrawlStats/getCrawlStatsPieData",
+    method: "get",
+    params,
+  });
+};
+
+// @Tags TblCrawlStats
+// @Summary 获取访问统计次数
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /tblCrawlStats/getSummaryCrawlInfo [get]
+export const getSummaryCrawlInfo = (params) => {
+  return service({
+    url: "/tblCrawlStats/getSummaryCrawlInfo",
+    method: "get",
+    params,
+  });
+};
+
+// @Tags TblCrawlStats
+// @Summary 获取清洗列表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /tblCrawlStats/getCleanList [get]
+export const getCleanList = (params) => {
+  return service({
+    url: "/tblCrawlStats/getCleanList",
+    method: "get",
+    params,
+  });
+};
+
+// @Tags TblCrawlStats
+// @Summary 获取更新次数报表
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Router /tblCrawlStats/getTotalResourceReportsList [get]
+export const getTotalResourceReportsList = (params) => {
+  return service({
+    url: "/tblCrawlStats/getTotalResourceReportsList",
+    method: "get",
+    params,
+  });
+};

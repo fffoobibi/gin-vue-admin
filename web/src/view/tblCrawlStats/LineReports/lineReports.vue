@@ -40,9 +40,9 @@
 </template>
 <script setup>
 import * as echarts from 'echarts'
-import { nextTick, onMounted, onUnmounted, ref, watch, toRefs, computed } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch, toRefs } from 'vue'
 import { useWindowResize } from '@/hooks/use-windows-resize'
-import { getFirstCrawlInfo, getCrawlStatsPieData } from '@/api/tblCrawlStats'
+import { getFirstCrawlInfo, getCrawlStatsPieData, getCleanList, getTotalResourceReportsList } from '@/api/tblCrawlStats'
 import { getKolCrawlInfo } from "@/api/tblKolResource"
 import { groupData, formatNumber } from '@/utils/reports'
 
@@ -70,12 +70,11 @@ const props = defineProps({
 
 })
 
-console.log("init line reports")
 const dataZoom = () => {
-  let startDate = new Date(props.startTime);
-  let endDate = new Date(props.endTime);
-  let timeDiff = endDate.getTime() - startDate.getTime();
-  let daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  let startDate = new Date(props.startTime)
+  let endDate = new Date(props.endTime)
+  let timeDiff = endDate.getTime() - startDate.getTime()
+  let daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
   let rs
   if (daysDiff >= 10) {
     rs = [
@@ -86,9 +85,9 @@ const dataZoom = () => {
         start: 0,
         end: 100,
       },
-      {
-        type: 'inside'
-      },
+      // {
+      //   type: 'inside'
+      // },
     ]
   } else {
     rs = [
@@ -104,14 +103,12 @@ const dataZoom = () => {
   return rs
 }
 
-
 let chart = null
 const line = ref(null)
 const { startTime, endTime, report, group } = toRefs(props)
 const loading = ref(true)
 
 watch([startTime, endTime, group, report], async (newVal, oldVal) => {
-  console.log("change ---->", report.value, props.startTime && props.endTime);
   chart.showLoading({ text: '' })
   await displayLineReports()
   chart.hideLoading()
@@ -126,7 +123,6 @@ useWindowResize(() => {
 
 const renderLineChart = (legendData, xdata, ydata) => {
   if (!chart) {
-    console.log("init line chart ===>")
     chart = echarts.init(line.value)
   }
   chart.setOption({
@@ -214,17 +210,40 @@ async function displayLineReports() {
         keys = k
       })
       renderLineChart(legendData, keys, data)
+    } else if (props.report == 2) {
+      // 数据清洗报表
+      const resp = await getCleanList({ st_time: props.startTime, ed_time: props.endTime })
+      const legendData = Object.keys(resp.data)
+      const data = []
+      let keys
+      legendData.forEach(element => {
+        const [d, k] = fillData(resp.data[element] ?? [], props.startTime, props.endTime, props.group)
+        data.push({ name: element, type: 'line', smooth: true, data: d })
+        keys = k
+      })
+      renderLineChart(legendData, keys, data)
+    } else if (props.report == 3) {
+      // 更细次数报表
+      const resp = await getTotalResourceReportsList({ st_time: props.startTime, ed_time: props.endTime })
+      const legendData = Object.keys(resp.data)
+      const data = []
+      let keys
+      legendData.forEach(element => {
+        const [d, k] = fillData(resp.data[element] ?? [], props.startTime, props.endTime, props.group)
+        data.push({ name: element, type: 'line', smooth: true, data: d })
+        keys = k
+      })
+      renderLineChart(legendData, keys, data)
     }
   }
 }
-
 
 const c2 = ref(null)
 const c3 = ref(null)
 const c4 = ref(null)
 let chart2 = null // 国家
-let chart3 = null  // 平台
-let chart4 = null  // 类目
+let chart3 = null // 平台
+let chart4 = null // 类目
 
 const renderPieCharts = (countryData, platformData, categories, categoryData, reportType = 0) => {
   if (chart2 === null) {
@@ -395,10 +414,7 @@ const distPlayPieChart = async () => {
 onMounted(async () => {
   await nextTick()
   chart = echarts.init(line.value)
-  // chart.showLoading({ text: '' })
   await displayLineReports()
-  // chart.hideLoading()
-
   await distPlayPieChart()
   loading.value = false
 

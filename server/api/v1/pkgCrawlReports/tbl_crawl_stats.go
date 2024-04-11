@@ -152,9 +152,9 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetTblCrawlStatsList(c *gin.Context) {
 	}
 }
 
-// GetFirstCrawlInfo 获取初次抓取统计数量
-// @Router /tblCrawlStats/GetFirstCrawlInfo [get]
-func (tblCrawlStatsApi *TblCrawlStatsApi) GetFirstCrawlInfo(c *gin.Context) {
+// GetFirstCrawlReportsList 获取初次抓取统计数量
+// @Router /tblCrawlStats/GetFirstCrawlReportsList [get]
+func (tblCrawlStatsApi *TblCrawlStatsApi) GetFirstCrawlReportsList(c *gin.Context) {
 	var query pkgCrawlReportsReq.TblCrawlStatsSearchQuery
 	err := c.ShouldBindQuery(&query)
 	if err != nil {
@@ -211,6 +211,38 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetSummaryCrawlInfo(c *gin.Context) {
 		return
 	}
 	if list, err := tblCrawlStatsService.GetSummaryCrawlInfo(query); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(list, "获取成功", c)
+	}
+}
+
+// GetCleanReportsList 获取清洗数据
+func (tblCrawlStatsApi *TblCrawlStatsApi) GetCleanReportsList(c *gin.Context) {
+	var query pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery
+	err := c.ShouldBindQuery(&query)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if list, err := tblCrawlStatsService.GetCleanReportsList(query); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(list, "获取成功", c)
+	}
+}
+
+// GetTotalResourceReportsList 获取总资源更新次数
+func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceReportsList(c *gin.Context) {
+	var query pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery
+	err := c.ShouldBindQuery(&query)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if list, err := tblCrawlStatsService.GetTotalResourceReportsList(query); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
 	} else {

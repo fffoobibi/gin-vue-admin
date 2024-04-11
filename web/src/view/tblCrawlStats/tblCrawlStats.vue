@@ -35,9 +35,18 @@
 
         <el-col>
           <el-card style="height: 250px; width: 420px" class="radius-10">
-            <h4>
-              <svg-icon name="icon-bigdeal" style="width:16px;height:16px" />大事记
-            </h4>
+            <el-row justify="space-between" align="middle">
+              <el-col :span="16">
+                <h4>
+                  <svg-icon name="icon-bigdeal" style="width:16px;height:16px" />大事记
+                </h4>
+              </el-col>
+              <el-col :span="8" :push="5">
+                <span @click="console.log('ffff')" style="cursor: pointer;">
+                  更多...
+                </span>
+              </el-col>
+            </el-row>
             <el-scrollbar height="150px">
               <div style="height: 180px;">
                 <div v-for="log in logs" style="margin-bottom: 10px;">
@@ -54,7 +63,7 @@
     </el-row>
 
     <el-row justify="center">
-      <el-card style="width: 1290px;margin-top: 20px; min-height: 840px;" class="radius-10" body-class="no-padding">
+      <el-card class="radius-10 report-card" body-class="no-padding">
         <el-affix :offset="95">
           <el-row justify="space-between" align="middle" class="padding-5 report-header">
             <el-col :span="4">
@@ -84,19 +93,19 @@
             <ul class="list-inline">
               <li :class="ac0" @click="clickReportsTab(0)">
                 <p>首次抓取次数</p>
-                <span>541,289</span>
+                <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
               </li>
               <li :class="ac1" @click="clickReportsTab(1)">
                 <p>有效资源数</p>
-                <span>541,289</span>
+                <span>{{ formatNumber(summaryInfo.validCount) }}</span>
               </li>
               <li :class="ac2" @click="clickReportsTab(2)">
                 <p>数据清洗</p>
-                <span>541,289</span>
+                <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
               </li>
               <li :class="ac3" @click="clickReportsTab(3)">
                 <p>总资源库更新</p>
-                <span>541,289</span>
+                <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
               </li>
             </ul>
           </div>
@@ -116,9 +125,10 @@
 // 全量引入格式化工具 请按需保留
 import { reactive, ref, onMounted, nextTick } from 'vue'
 import { formatTimeToStr } from '@/utils/date'
-import { getTotalResourceInfo, getCrawlStatsPieData } from '@/api/tblCrawlStats'
+import { getTotalResourceInfo, getSummaryCrawlInfo } from '@/api/tblCrawlStats'
 import * as echarts from 'echarts'
 import LineReports from '@/view/tblCrawlStats/LineReports/lineReports.vue'
+import { formatNumber } from '@/utils/reports'
 
 defineOptions({
   name: 'TblCrawlStats'
@@ -330,6 +340,22 @@ const setTotalPies = () => {
     })
 }
 
+const summaryInfo = reactive({
+  crawlCount: 0,
+  validCount: 0,
+  cleanCount: 0,
+  updateCount: 0,
+  totalCount: 0
+})
+
+const disPlaySummaryInfo = async (st_time, ed_time) => {
+  const resp = await getSummaryCrawlInfo({ st_time, ed_time })
+  summaryInfo.crawlCount = resp.data.crawl_count
+  summaryInfo.validCount = resp.data.valid_count
+  summaryInfo.cleanCount = resp.data.clean_count
+  summaryInfo.updateCount = resp.data.update_count
+  summaryInfo.totalCount = resp.data.total_count
+}
 
 onMounted(async () => {
   await nextTick()
@@ -340,6 +366,7 @@ onMounted(async () => {
     totalResourceInfo.Instagram = resp.data.Instagram
     totalResourceInfo.Tiktok = resp.data.Tiktok
     setTotalPies(resp.data)
+    await disPlaySummaryInfo(st_time.value, ed_time.value)
   } catch (error) {
 
   }
@@ -429,6 +456,12 @@ const shortcuts = [
   padding: 0px;
 }
 
+.report-card {
+  width: 1290px;
+  margin-top: 20px;
+  min-height: 840px;
+}
+
 .inv-bg {
   width: 140px;
   height: 140px;
@@ -447,6 +480,8 @@ const shortcuts = [
   width: 100%;
   margin-top: 5px;
 }
+
+
 
 .report-header {
   background: #F1F5F9;
