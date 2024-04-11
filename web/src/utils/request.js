@@ -6,7 +6,8 @@ import { ElLoading } from 'element-plus'
 
 const service = axios.create({
   baseURL: import.meta.env.VITE_BASE_API,
-  timeout: 99999
+  timeout: 99999,
+  donNotShowLoading: true
 })
 let activeAxios = 0
 let timer

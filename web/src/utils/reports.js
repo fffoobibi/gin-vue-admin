@@ -20,7 +20,7 @@ export function iterateDays(startDateStr, endDateStr) {
  * @param {"day"|"week"|"month"} groupBy
  * @returns Array
  */
-export function groupData(data, groupBy) {
+export function groupData(data, groupBy, date_key = 'date', count_key = 'count') {
   // 创建一个对象，用于保存按照日期分组后的结果
   const groupedData = {}
 
@@ -30,13 +30,13 @@ export function groupData(data, groupBy) {
     let date
     switch (groupBy) {
       case 'day':
-        date = item.date
+        date = item[date_key]
         break
       case 'week':
-        date = getYearWeek(item.date) // 修改为获取全年第几周的函数
+        date = getYearWeek(item[date_key]) // 修改为获取全年第几周的函数
         break
       case 'month':
-        date = item.date.slice(0, 7) // 获取年份和月份部分
+        date = item[date_key].slice(0, 7) // 获取年份和月份部分
         break
       default:
         console.error('Invalid groupBy value')
@@ -45,16 +45,16 @@ export function groupData(data, groupBy) {
 
     // 如果日期不存在于 groupedData 中，则创建一个新的分组
     if (!groupedData[date]) {
-      groupedData[date] = { count: 0 }
+      groupedData[date] = { [count_key]: 0 }
     }
 
     // 将当前数据的 count 累加到对应的分组中
-    groupedData[date].count += item.count
+    groupedData[date][count_key] += item[count_key]
   })
 
   // 将结果转换为数组形式并返回
   return Object.keys(groupedData).map((date) => {
-    return { date: date, count: groupedData[date].count }
+    return { [date_key]: date, [count_key]: groupedData[date][count_key] }
   })
 }
 
@@ -75,4 +75,13 @@ function getWeekNumber(date) {
   d.setUTCDate(d.getUTCDate() + 4 - dayNum)
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
   return Math.ceil(((d - yearStart) / 86400000 + 1) / 7)
+}
+
+/**
+ *
+ * @param {Number} num
+ * @returns String
+ */
+export function formatNumber(num) {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

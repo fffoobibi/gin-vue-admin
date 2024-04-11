@@ -50,22 +50,22 @@ cors:
           expose-headers: Content-Length, Access-Control-Allow-Origin, Access-Control-Allow-Headers, Content-Type
           allow-credentials: true
 db-list:
-    - type: ""
-      alias-name: ""
+    - type: "mysql"
+      alias-name: "mediamz"
       prefix: ""
-      port: ""
-      config: ""
-      db-name: ""
-      username: ""
-      password: ""
-      path: ""
+      port: 5004
+      config: charset=utf8mb4&parseTime=True&loc=Local
+      db-name: mediamz
+      username: root
+      password: b=!@#--pfdnzzxsj2kdgjm
+      path: 36.32.174.26
       engine: ""
-      log-mode: ""
+      log-mode: warn
       max-idle-conns: 10
       max-open-conns: 100
       singular: false
       log-zap: false
-      disable: true
+      disable: false
 email:
     to: xxx@qq.com
     from: xxx@163.com

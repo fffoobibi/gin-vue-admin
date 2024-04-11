@@ -84,6 +84,8 @@ func Routers() *gin.Engine {
 		pkgCrawlReportsRouter.InitStudentRouter(PrivateGroup)
 		pkgCrawlReportsRouter.InitTblCrawlStatsRouter(PrivateGroup)
 		pkgCrawlReportsRouter.InitTblCrawlEventsRouter(PrivateGroup)
+		pkgCrawlReportsRouter.InitTblKolResourceRouter(PrivateGroup)
+		pkgCrawlReportsRouter.InitTblKolResourceCleanRouter(PrivateGroup)
 
 	}
 

@@ -75,7 +75,6 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTblCrawlStatsInfoList(info 
 
 // GetFirstCrawlCount 获取初次访问次数
 func (tblCrawlStatsService *TblCrawlStatsService) GetFirstCrawlCount(info pkgCrawlReportsReq.TblCrawlStatsSearchQuery) (map[string][]map[string]interface{}, error) {
-
 	if info.StartTime != "" {
 		t, _ := time.Parse("2006-01-02", info.StartTime)
 		info.StartCreatedAt = &t
@@ -119,11 +118,72 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetFirstCrawlCount(info pkgCra
 				).Order("create_time").Scan(&list).Error
 
 			if err != nil {
-				zap.Error(err)
+				global.GVA_LOG.Error("error in query", zap.Error(err))
 			}
 			rs[strings.Title(key)] = list
 		}
 		return rs, nil
 	}
 	return nil, nil
+}
+
+// GetSummaryCrawlInfo 获取访问统计次数
+func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery) (struct {
+	CrawlCount  uint64 `json:"crawl_count"`
+	ValidCount  uint64 `json:"valid_count"`
+	CleanCount  uint64 `json:"clean_count"`
+	UpdateCount uint64 `json:"update_count"`
+	TotalCount  uint64 `json:"total_count"`
+}, error) {
+	s1, _ := time.Parse("2006-01-02", info.StartTime)
+	s2, _ := time.Parse("2006-01-02", info.EndTime)
+	location, _ := time.LoadLocation("Asia/Shanghai")
+	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
+	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
+
+	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
+		zap.String("end", fmt.Sprintf("%s", endOfDay)))
+
+	midnightTimestamp := midnight.Unix()
+	endOfDayTimestamp := endOfDay.Unix()
+
+	var rs struct {
+		CrawlCount  uint64 `json:"crawl_count"`
+		ValidCount  uint64 `json:"valid_count"`
+		CleanCount  uint64 `json:"clean_count"`
+		UpdateCount uint64 `json:"update_count"`
+		TotalCount  uint64 `json:"total_count"`
+	}
+
+	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).Debug().
+		Select("SUM(count) as `crawl_count`").
+		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).
+		Scan(&rs).Error; err != nil {
+		global.GVA_LOG.Error("error in query crawl count", zap.Error(err))
+	}
+	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResource{}).
+		Select("COUNT(*) as valid_count").
+		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).Scan(&rs).Error; err != nil {
+		global.GVA_LOG.Error("error in query valid count", zap.Error(err))
+	}
+
+	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResourceClean{}).
+		Select("COUNT(*) as clean_count").
+		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).Scan(&rs).Error; err != nil {
+		global.GVA_LOG.Error("error in query clean count", zap.Error(err))
+	}
+
+	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).
+		Select("COUNT(*) as update_count").
+		Where("create_time >= ? AND create_time <= ? AND name LIKE ?", midnightTimestamp, endOfDayTimestamp, "%-update%").Scan(&rs).Error; err != nil {
+		global.GVA_LOG.Error("error in query update count", zap.Error(err))
+	}
+
+	if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_marketing_total_resource").
+		Select("COUNT(*) as total_count").
+		Scan(&rs).Error; err != nil {
+		global.GVA_LOG.Error("error in query total count", zap.Error(err))
+	}
+
+	return rs, nil
 }

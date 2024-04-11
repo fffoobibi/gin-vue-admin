@@ -107,7 +107,7 @@ export const getFirstCrawlInfo = (params) => {
   return service({
     url: '/tblCrawlStats/getFirstCrawlInfo',
     method: 'get',
-    params
+    params,
   })
 }
 
@@ -122,7 +122,7 @@ export const getTotalResourceInfo = (params) => {
   return service({
     url: '/tblCrawlStats/getTotalResourceInfo',
     method: 'get',
-    params
+    params,
   })
 }
 

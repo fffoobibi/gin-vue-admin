@@ -54,75 +54,56 @@
     </el-row>
 
     <el-row justify="center">
-      <el-card style="width: 1290px;margin-top: 20px; min-height: 800px;" class="radius-10" body-class="no-padding">
-        <el-row justify="space-between" align="middle" class="padding-5 report-header">
-          <el-col :span="4">
-            <h3>
-              <svg-icon name="icon-menu" style="width: 20px; height:20px" />
-              数据趋势图
-            </h3>
-          </el-col>
+      <el-card style="width: 1290px;margin-top: 20px; min-height: 840px;" class="radius-10" body-class="no-padding">
+        <el-affix :offset="95">
+          <el-row justify="space-between" align="middle" class="padding-5 report-header">
+            <el-col :span="4">
+              <h3>
+                <svg-icon name="icon-menu" style="width: 20px; height:20px" />
+                数据趋势图
+              </h3>
+            </el-col>
 
-          <el-col :offset="10" :span="2.9">
-            <div class="week">
-              <span :class="group.g0" @click="handleGroup(0)">日</span>
-              <span :class="group.g1" @click="handleGroup(1)">周</span>
-              <span :class="group.g2" @click="handleGroup(2)">月</span>
-            </div>
+            <el-col :offset="10" :span="2.9">
+              <div class="week">
+                <span :class="group.g0" @click="handleGroup(0)">日</span>
+                <span :class="group.g1" @click="handleGroup(1)">周</span>
+                <span :class="group.g2" @click="handleGroup(2)">月</span>
+              </div>
 
-          </el-col>
+            </el-col>
 
-          <el-col :span="5">
-            <el-date-picker v-model="timeValue" style="width: 240px" type="daterange" :shortcuts="shortcuts"
-              range-separator="-" start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
-              @change="dateChange" />
-          </el-col>
+            <el-col :span="5">
+              <el-date-picker v-model="timeValue" style="width: 240px" type="daterange" :shortcuts="shortcuts"
+                range-separator="-" start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
+                @change="dateChange" />
+            </el-col>
 
-        </el-row>
-        <div class="data-tab">
-          <ul class="list-inline">
-            <li :class="ac0" @click="clickReportsTab(0)">
-              <p>首次抓取次数</p>
-              <span>541,289</span>
-            </li>
-            <li :class="ac1" @click="clickReportsTab(1)">
-              <p>有效资源数</p>
-              <span>541,289</span>
-            </li>
-            <li :class="ac2" @click="clickReportsTab(2)">
-              <p>数据清洗</p>
-              <span>541,289</span>
-            </li>
-            <li :class="ac3" @click="clickReportsTab(3)">
-              <p>总资源库更新</p>
-              <span>541,289</span>
-            </li>
-          </ul>
-        </div>
+          </el-row>
+          <div class="data-tab">
+            <ul class="list-inline">
+              <li :class="ac0" @click="clickReportsTab(0)">
+                <p>首次抓取次数</p>
+                <span>541,289</span>
+              </li>
+              <li :class="ac1" @click="clickReportsTab(1)">
+                <p>有效资源数</p>
+                <span>541,289</span>
+              </li>
+              <li :class="ac2" @click="clickReportsTab(2)">
+                <p>数据清洗</p>
+                <span>541,289</span>
+              </li>
+              <li :class="ac3" @click="clickReportsTab(3)">
+                <p>总资源库更新</p>
+                <span>541,289</span>
+              </li>
+            </ul>
+          </div>
+        </el-affix>
+
         <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">*注:抓取数据是根据链接的总数量计算</p>
         <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current" />
-
-        <el-row :gutter="20" style="margin-left: 10px;margin-right: 10px; margin-top: 10px;">
-          <el-col :span="8">
-            <el-card style="height: 200px" shadow="hover">
-              <div ref="c4"></div>
-
-            </el-card>
-          </el-col>
-
-          <el-col :span="8">
-            <el-card style="height: 200px" shadow="hover">
-              <div ref="c5"></div>
-            </el-card>
-          </el-col>
-
-          <el-col :span="8">
-            <el-card style="height: 200px" shadow="hover">
-              <div ref="c6"></div>
-            </el-card>
-          </el-col>
-
-        </el-row>
 
       </el-card>
     </el-row>
@@ -177,7 +158,7 @@ let chat1 = null
 let chat2 = null
 let chat3 = null
 
-const setTotalPies = (data) => {
+const setTotalPies = () => {
   if (chat1 === null) {
     chat1 = echarts.init(c1.value)
   }
@@ -349,172 +330,6 @@ const setTotalPies = (data) => {
     })
 }
 
-const c4 = ref(null)
-const c5 = ref(null)
-const c6 = ref(null)
-let chat4 = null
-let chat5 = null
-let chat6 = null
-
-const setFooterPies = (data, reportType = 0) => {
-  if (chat4 === null) {
-    chat4 = echarts.init(c4.value)
-  }
-  chat4.setOption(
-    {
-      legend: {
-        orient: 'vertical',
-        x: 'right',
-        y: '20%',
-        itemWidth: 0,
-        textStyle: {
-          color: '#fff',
-          fontSize: 12,
-        },
-        selectedMode: false, //取消图例上的点击事件
-
-      },
-      formatter: (name) => {
-        let data = ''
-        if (name === 'Tiktok') {
-          data = (Number(totalResourceInfo.Tiktok / totalResourceInfo.total_count) * 100).toFixed()
-          const text = `${name} ${data}%`
-          return `${text}`
-        }
-      },
-      color: ['#FF9600', '#72B9FF'],
-      series: [
-        {
-          type: 'pie',
-          data: [
-            {
-              value: totalResourceInfo.Tiktok,
-              name: 'Tiktok',
-              label: {
-                show: false,
-              },
-            },
-            {
-              value: totalResourceInfo.Youtube + totalResourceInfo.Instagram,
-              name: ''
-            }
-          ],
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
-          }
-        },
-
-      ]
-    })
-
-  if (chat5 === null) {
-    chat5 = echarts.init(c5.value)
-  }
-  chat5.setOption(
-    {
-      // tooltip: {
-      //   trigger: 'item',
-      //   formatter: function (params) {
-      //     return `${params.value} 占比%`
-      //   }
-      // },
-      legend: {
-        orient: 'vertical',
-        x: 'right',
-        y: '20%',
-        itemWidth: 0,
-        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
-        textStyle: {
-          color: '#fff',
-          fontSize: 12,
-        },
-        selectedMode: false
-      },
-      formatter: (name) => {
-        let data = ''
-        if (name === 'Youtube') {
-          data = (Number(totalResourceInfo.Youtube / totalResourceInfo.total_count) * 100).toFixed()
-          const text = `${name} ${data}%`
-          return `${text}`
-        }
-      },
-      color: ['#FF9600', '#72B9FF'],
-      series: [
-        {
-          type: 'pie',
-          data: [
-            {
-              value: totalResourceInfo.Youtube,
-              name: 'Youtube'
-            },
-            {
-              value: totalResourceInfo.Tiktok + totalResourceInfo.Instagram,
-              name: ''
-            }
-          ],
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
-          },
-          label: {
-            show: false,
-          },
-        }
-      ]
-    })
-
-  if (chat6 === null) {
-    chat6 = echarts.init(c6.value)
-  }
-  chat6.setOption(
-    {
-      legend: {
-        orient: 'vertical',
-        x: 'right',
-        y: '20%',
-        itemWidth: 0,
-        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
-        textStyle: {
-          color: '#fff',
-          fontSize: 12,
-        },
-        selectedMode: false
-      },
-      formatter: (name) => {
-        let data = ''
-        if (name === 'Instagram') {
-          data = (Number(totalResourceInfo.Instagram / totalResourceInfo.total_count) * 100).toFixed()
-          const text = `${name} ${data}%`
-          return `${text}`
-        }
-      },
-      color: ['#FF9600', '#72B9FF'],
-      series: [
-        {
-          type: 'pie',
-          data: [
-            {
-              value: totalResourceInfo.Instagram,
-              name: 'Instagram'
-            },
-            {
-              value: totalResourceInfo.Youtube + totalResourceInfo.Tiktok,
-              name: ''
-            }
-          ],
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
-          },
-          label: {
-            show: false,
-          },
-        }
-      ]
-    })
-}
-
 
 onMounted(async () => {
   await nextTick()
@@ -528,12 +343,6 @@ onMounted(async () => {
   } catch (error) {
 
   }
-  try{
-    const resp = await getCrawlStatsPieData()
-  }catch(error){
-
-  }
-
 })
 
 const handleGroup = (val) => {
@@ -572,6 +381,7 @@ const clickReportsTab = (type) => {
     ac0.value = ac1.value = ac2.value = ''
     ac3.value = 'active'
   }
+  report.value = type
 }
 
 const logs = ref([
@@ -691,8 +501,8 @@ const shortcuts = [
 
 .data-tab ul li {
   background: url(@/assets/tab-bg.png) right 0px no-repeat;
-  padding: 22px;
-  height: 47px;
+  padding: 10px;
+  height: 30px;
   font-size: 16px;
   min-width: 180px;
   cursor: pointer;

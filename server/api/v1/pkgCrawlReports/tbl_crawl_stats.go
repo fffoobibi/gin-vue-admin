@@ -6,8 +6,10 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/model/pkgCrawlReports"
 	pkgCrawlReportsReq "github.com/flipped-aurora/gin-vue-admin/server/model/pkgCrawlReports/request"
 	"github.com/flipped-aurora/gin-vue-admin/server/service"
+	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"net/http"
 )
 
 type TblCrawlStatsApi struct {
@@ -184,14 +186,34 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceInfo(c *gin.Context) {
 // GetCrawlStatsPieData 获取饼图数据
 // @Router /tblCrawlStats/getCrawlStatsPieData [get]
 func (tblCrawlStatsApi *TblCrawlStatsApi) GetCrawlStatsPieData(c *gin.Context) {
-
-	global.GVA_DBList["mysql"].Select()
-	// mock
-	data := gin.H{
-		//"country":   {},
-		"country":  []gin.H{gin.H{"us": 50, "jp": 100, "bri": 1202}},
-		"platform": 84123,
-		"category": 22344,
+	var searchInfo pkgCrawlReportsReq.TblCrawlStatsPieDataQuery
+	err := c.ShouldBindQuery(&searchInfo)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
 	}
-	response.OkWithDetailed(data, "获取成功", c)
+	// 接口调用
+	var values []byte
+	values, _ = utils.Get("https://gmen.mediamz.com/Api/crawlCountryPlatformCategoryPieData", map[string]string{
+		"st_time": searchInfo.StartTime + " 00:00:00",
+		"ed_time": searchInfo.EndTime + " 23:59:59",
+	})
+	c.Header("Content-Type", "application/json;charset=utf-8")
+	c.String(http.StatusOK, string(values))
+}
+
+// GetSummaryCrawlInfo 获取所有统计数据
+func (tblCrawlStatsApi *TblCrawlStatsApi) GetSummaryCrawlInfo(c *gin.Context) {
+	var query pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery
+	err := c.ShouldBindQuery(&query)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if list, err := tblCrawlStatsService.GetSummaryCrawlInfo(query); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(list, "获取成功", c)
+	}
 }

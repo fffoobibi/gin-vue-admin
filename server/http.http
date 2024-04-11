@@ -1,5 +1,5 @@
 ### GET request with cookie passed through headers
-GET http://127.0.0.1:8888/tblCrawlStats/getFirstCrawlInfo?st_time=2024-04-07&ed_time=2024-04-08
+GET http://127.0.0.1:8888/tblCrawlStats/getFirstCrawlInfo?st_time=2024-04-09&ed_time=2024-04-10
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}
@@ -10,3 +10,22 @@ X-Token: {{user-token}}
     });
 %}
 >>! 123.json
+
+###
+GET http://127.0.0.1:8888/tblCrawlStats/getCrawlStatsPieData?st_time=2022-01-07
+Accept: application/json
+X-User-Id: {{user-id}}
+X-Token: {{user-token}}
+
+
+### 获取邮箱资源量
+GET http://127.0.0.1:8888/tblKolResource/getKolResourceCrawlInfo?st_time=2024-01-01&ed_time=2024-04-10
+Accept: application/json
+X-User-Id: {{user-id}}
+X-Token: {{user-token}}
+
+### 获取出次数，有效数，更新数
+GET http://127.0.0.1:8888/tblCrawlStats/getSummaryCrawlInfo?st_time=2024-01-01&ed_time=2024-04-10
+Accept: application/json
+X-User-Id: {{user-id}}
+X-Token: {{user-token}}
