@@ -175,7 +175,7 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 
 	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).
 		Select("COUNT(*) as update_count").
-		Where("create_time >= ? AND create_time <= ? AND (name LIKE ? or name LIKE ? or name Like ?)", midnightTimestamp, endOfDayTimestamp, "%tt-update%", "%ytb-update%", "ins-update").Scan(&rs).Error; err != nil {
+		Where("create_time >= ? AND create_time <= ? AND (name LIKE ? or name LIKE ? or name Like ?)", midnightTimestamp, endOfDayTimestamp, "%total-resource-tiktok%", "%total-resource-ytb%", "%total-resource-ins%").Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query update count", zap.Error(err))
 	}
 
@@ -235,14 +235,14 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 
 	midnightTimestamp := midnight.Unix()
 	endOfDayTimestamp := endOfDay.Unix()
-	conditions := map[string]string{"TikTok": "%tt-update%", "Youtube": "%ytb-update%", "Instagram": "%ins-update%"}
+	conditions := map[string]string{"TikTok": "total-resource-tiktok", "Youtube": "total-resource-ytb", "Instagram": "total-resource-ins"}
 
 	var rs = map[string][]map[string]any{}
 	for k, v := range conditions {
 		var list []map[string]any
-		if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).
+		if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).Debug().
 			Select("FROM_UNIXTIME(create_time, '%Y-%m-%d') as date, COUNT(*) AS count").
-			Where("create_time >= ? AND create_time <= ? AND name LIKE ?",
+			Where("create_time >= ? AND create_time <= ? AND name = ?",
 				midnightTimestamp, endOfDayTimestamp, v,
 			).
 			Group("date").
