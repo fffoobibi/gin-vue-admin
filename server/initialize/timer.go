@@ -26,10 +26,9 @@ func Timer() {
 
 		// 其他定时任务定在这里 参考上方使用方法
 
-		//_, err := global.GVA_Timer.AddTaskByFunc("定时任务标识", "corn表达式", func() {
-		//	具体执行内容...
-		//  ......
-		//}, option...)
+		//_, err = global.GVA_Timer.AddTaskByFunc("TestTask", "@every 1s", func() {
+		//	global.GVA_LOG.Info("fuck test ===>")
+		//}, "测试使用", option...)
 		//if err != nil {
 		//	fmt.Println("add timer error:", err)
 		//}

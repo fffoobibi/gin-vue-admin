@@ -64,57 +64,56 @@
 
     <el-row justify="center">
       <el-card class="radius-10 report-card" body-class="no-padding">
-        <el-affix :offset="95">
-          <el-row justify="space-between" align="middle" class="padding-5 report-header">
-            <el-col :span="4">
-              <h3>
-                <svg-icon name="icon-menu" style="width: 20px; height:20px" />
-                数据趋势图
-              </h3>
-            </el-col>
+        <!-- <el-affix :offset="98"> -->
+        <el-row justify="space-between" align="middle" class="padding-5 report-header">
+          <el-col :span="4">
+            <h3>
+              <svg-icon name="icon-menu" style="width: 20px; height:20px" />
+              数据趋势图
+            </h3>
+          </el-col>
 
-            <el-col :offset="10" :span="2.9">
-              <div class="week">
-                <span :class="group.g0" @click="handleGroup(0)">日</span>
-                <span :class="group.g1" @click="handleGroup(1)">周</span>
-                <span :class="group.g2" @click="handleGroup(2)">月</span>
-              </div>
+          <el-col :offset="10" :span="2.9">
+            <div class="week">
+              <span :class="group.g0" @click="handleGroup(0)">日</span>
+              <span :class="group.g1" @click="handleGroup(1)">周</span>
+              <span :class="group.g2" @click="handleGroup(2)">月</span>
+            </div>
 
-            </el-col>
+          </el-col>
 
-            <el-col :span="5">
-              <el-date-picker v-model="timeValue" style="width: 240px" type="daterange" :shortcuts="shortcuts"
-                range-separator="-" start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
-                @change="dateChange" />
-            </el-col>
+          <el-col :span="5">
+            <el-date-picker v-model="timeValue" style="width: 240px" type="daterange" :shortcuts="shortcuts"
+              range-separator="-" start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
+              @change="dateChange" />
+          </el-col>
 
-          </el-row>
-          <div class="data-tab">
-            <ul class="list-inline">
-              <li :class="ac0" @click="clickReportsTab(0)">
-                <p>首次抓取次数</p>
-                <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
-              </li>
-              <li :class="ac1" @click="clickReportsTab(1)">
-                <p>有效资源数</p>
-                <span>{{ formatNumber(summaryInfo.validCount) }}</span>
-              </li>
-              <li :class="ac2" @click="clickReportsTab(2)">
-                <p>数据清洗</p>
-                <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
-              </li>
-              <li :class="ac3" @click="clickReportsTab(3)">
-                <p>总资源库更新</p>
-                <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
-              </li>
-            </ul>
-          </div>
-        </el-affix>
-
+        </el-row>
+        <div class="data-tab">
+          <ul class="list-inline">
+            <li :class="ac0" @click="clickReportsTab(0)">
+              <p>首次抓取次数</p>
+              <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
+            </li>
+            <li :class="ac1" @click="clickReportsTab(1)">
+              <p>有效资源数</p>
+              <span>{{ formatNumber(summaryInfo.validCount) }}</span>
+            </li>
+            <li :class="ac2" @click="clickReportsTab(2)">
+              <p>数据清洗</p>
+              <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
+            </li>
+            <li :class="ac3" @click="clickReportsTab(3)">
+              <p>总资源库更新</p>
+              <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
+            </li>
+          </ul>
+        </div>
+        <!-- </el-affix> -->
         <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p>
         <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current" />
-
       </el-card>
+
     </el-row>
 
   </div>
