@@ -41,3 +41,9 @@ GET http://127.0.0.1:8888/tblCrawlStats/getTotalResourceReportsList?st_time=2024
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}
+
+### 获取大事记
+GET http://127.0.0.1:8888/e/getTblCrawlEventsList?st_time=2024-01-01&ed_time=2024-04-11&page=1&pageSize=3
+Accept: application/json
+X-User-Id: {{user-id}}
+X-Token: {{user-token}}

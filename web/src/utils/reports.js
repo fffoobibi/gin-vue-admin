@@ -62,9 +62,28 @@ export function groupData(data, groupBy, date_key = 'date', count_key = 'count')
 function getYearWeek(dateStr) {
   const date = new Date(dateStr)
   const year = date.getFullYear()
-  const week = getWeekNumber(date)
+  const week = getWeekNumberEx(dateStr)
   return year + '-W' + week
 }
+
+function getWeekNumberEx(dateString) {
+  // 将日期字符串转换为 Date 对象
+  var date = new Date(dateString);
+  // 获取日期所在年份的第一天
+  var yearStart = new Date(date.getFullYear(), 0, 1);
+  // 计算日期与年初的毫秒差值
+  var diffMilliseconds = date - yearStart;
+  // 计算当前周数（从 0 开始）
+  var weekNumber = Math.floor(diffMilliseconds / (7 * 24 * 60 * 60 * 1000));
+  // 如果当前周数小于 0，则将其设置为 0
+  if (weekNumber < 0) {
+      weekNumber = 0;
+  }
+  // 加上初始偏移量，确保周数从 1 开始
+  weekNumber += 1;
+  return weekNumber;
+}
+
 
 // 获取日期所在周数
 function getWeekNumber(date) {

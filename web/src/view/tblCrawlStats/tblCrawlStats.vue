@@ -111,7 +111,7 @@
           </div>
         </el-affix>
 
-        <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">*注:抓取数据是根据链接的总数量计算</p>
+        <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p>
         <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current" />
 
       </el-card>
@@ -123,7 +123,7 @@
 <script setup>
 
 // 全量引入格式化工具 请按需保留
-import { reactive, ref, onMounted, nextTick } from 'vue'
+import { reactive, ref, onMounted, nextTick, computed } from 'vue'
 import { formatTimeToStr } from '@/utils/date'
 import { getTotalResourceInfo, getSummaryCrawlInfo } from '@/api/tblCrawlStats'
 import * as echarts from 'echarts'
@@ -146,6 +146,18 @@ const st_time = ref(formatTimeToStr(dft_start, 'yyyy-MM-dd'))
 const ed_time = ref(formatTimeToStr(dft_end, 'yyyy-MM-dd'))
 const timeValue = ref([formatTimeToStr(dft_start), formatTimeToStr(dft_end)])
 const report = ref(0)
+
+const reportTip = computed(() => {
+  if (report.value == 0) {
+    return "*注:抓取次数指访问社媒平台的次数"
+  } else if (report.value == 1) {
+    return "*注:指红人链接去重后的数量"
+  } else if (report.value == 2) {
+    return "*注:指采集到的红人根据一定条件筛选后的数据量"
+  } else if (report.value == 3) {
+    return "*注:指总资源库红人更新的数据量"
+  }
+})
 
 const group = reactive({
   current: 'week',
@@ -534,7 +546,7 @@ const shortcuts = [
   margin: 0
 }
 
-.data-tab ul li {
+/* .data-tab ul li {
   background: url(@/assets/tab-bg.png) right 0px no-repeat;
   padding: 10px;
   height: 30px;
@@ -548,6 +560,23 @@ const shortcuts = [
 
 .data-tab ul .active {
   background-position: right -183px;
+  color: #215883;
+} */
+
+.data-tab ul li {
+  background: url(@/assets/tab-bg1.png) right 0px no-repeat;
+  padding: 10px;
+  height: 30px;
+  font-size: 16px;
+  min-width: 180px;
+  cursor: pointer;
+  padding-left: 30px;
+  font-weight: bold;
+  color: #51728c
+}
+
+.data-tab ul .active {
+  background: url(@/assets/tab-bg2.png) right 0px no-repeat;
   color: #215883;
 }
 

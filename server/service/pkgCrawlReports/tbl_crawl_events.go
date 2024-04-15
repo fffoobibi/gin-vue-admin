@@ -65,7 +65,7 @@ func (eService *TblCrawlEventsService) GetTblCrawlEventsInfoList(info pkgCrawlRe
 	}
 
 	if limit != 0 {
-		db = db.Limit(limit).Offset(offset)
+		db = db.Order("occurced_time DESC").Limit(limit).Offset(offset)
 	}
 
 	err = db.Find(&es).Error

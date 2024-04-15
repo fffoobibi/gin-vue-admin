@@ -104,7 +104,7 @@ func (tblKolResourceService *TblKolResourceService) GetKolResourceCrawlInfo(info
 		}
 		//平台：1 - TikTok 2 - YouTube 3 - Instagram
 
-		var rs = map[string][]map[string]interface{}{}
+		var rs = map[string][]map[string]any{}
 
 		for key, value := range conditions {
 			var list []map[string]interface{}

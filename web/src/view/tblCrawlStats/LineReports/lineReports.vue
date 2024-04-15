@@ -10,7 +10,7 @@
             <svg-icon name="icon-menu" style="width: 20px; height:20px;" />
             地区占比
           </span>
-          <div ref="c2" class="card-reports-pie"></div>
+          <div ref="pie1" class="card-reports-pie"></div>
         </el-card>
       </el-col>
 
@@ -20,7 +20,7 @@
             <svg-icon name="icon-menu" style="width: 20px; height:20px;" />
             平台占比
           </span>
-          <div ref="c3" class="card-reports-pie"></div>
+          <div ref="pie2" class="card-reports-pie"></div>
         </el-card>
       </el-col>
 
@@ -30,7 +30,7 @@
             <svg-icon name="icon-menu" style="width: 20px; height:20px;" />
             类目排行
           </span>
-          <div ref="c4" class="card-reports-pie" style="height: 200px"></div>
+          <div ref="pie3" class="card-reports-pie"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -238,152 +238,160 @@ async function displayLineReports() {
   }
 }
 
-const c2 = ref(null)
-const c3 = ref(null)
-const c4 = ref(null)
-let chart2 = null // 国家
-let chart3 = null // 平台
-let chart4 = null // 类目
+let chart2 = null
+let chart3 = null
+let chart4 = null
+const pie1 = ref(null)
+const pie2 = ref(null)
+const pie3 = ref(null)
+
 
 const renderPieCharts = (countryData, platformData, categories, categoryData, reportType = 0) => {
-  if (chart2 === null) {
-    chart2 = echarts.init(c2.value)
-  }
-  if (chart3 === null) {
-    chart3 = echarts.init(c3.value)
-  }
+  // if (!chart2) {
+  //   chart2 = echarts.init(pie1.value)
+  // }
+  // if (!chart3) {
+  //   chart3 = echarts.init(pie2.value)
+  // }
 
-  if (chart4 === null) {
-    chart4 = echarts.init(c4.value)
-  }
-  chart2.setOption(
-    {
-      legend: {
-        type: 'scroll',
-        orient: 'vertical',
-        x: 'right',
-        // formatter: '{b}: {c} ({d}%)', // {b} 代表名称，{c} 代表值，{d} 代表百分比
-      },
-      tooltip: {
-        trigger: "item",
-        // formatter: '{b} {c} {d}%'
-        formatter: function (params) {
-          return params.name + params.value + params.percent + '%';
-        }
-      },
-      series: [
-        {
-          type: 'pie',
-          data: countryData,
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
-          },
-          emphasis: {
-            label: {
-              show: true,
-              fontSize: 12,
-              fontWeight: 'bold'
-            }
-          },
-          label: {
-            show: false,
-            position: 'center',
-            formatter: function (params) {
-              return params.name + "\n" + params.value;
-            }
+  // if (!chart4) {
+  //   chart4 = echarts.init(pie3.value)
+  // }
+  if (chart2) {
+    chart2.setOption(
+      {
+        legend: {
+          type: 'scroll',
+          orient: 'vertical',
+          x: 'right',
+          // formatter: '{b}: {c} ({d}%)', // {b} 代表名称，{c} 代表值，{d} 代表百分比
+        },
+        tooltip: {
+          trigger: "item",
+          // formatter: '{b} {c} {d}%'
+          formatter: function (params) {
+            return params.name + params.value + params.percent + '%';
           }
         },
-
-      ]
-    })
-
-  chart3.setOption(
-    {
-      tooltip: {
-        trigger: "item",
-        // formatter: '{b}: {c}',
-        formater: function (params) {
-          return params.name + formatNumber(params.value)
-        },
-        textStyle: {
-          fontWeight: 'bold'
-        }
-      },
-      series: [
-        {
-          type: 'pie',
-          data: platformData,
-          label: {
-            show: true,
-            fontWeight: 'bold',
-            fontSize: 14,
-            formatter: function (params) {
-              return params.name + " \n" + params.percent.toFixed(2) + '%';
+        series: [
+          {
+            type: 'pie',
+            data: countryData,
+            radius: ['40%', '70%'],
+            labelLine: {
+              show: false
+            },
+            emphasis: {
+              label: {
+                show: true,
+                fontSize: 12,
+                fontWeight: 'bold'
+              }
+            },
+            label: {
+              show: false,
+              position: 'center',
+              formatter: function (params) {
+                return params.name + "\n" + params.value;
+              }
             }
           },
-        }
-      ]
-    })
 
-  chart4.setOption(
-    {
-      // dataZoom: [
-      //   {
-      //     type: 'slider',
-      //     show: true,
-      //     yAxisIndex: [0],
-      //     left: '50%',
-      //     start: 29,
-      //     end: 36
-      //   },
-      // ],
-      tooltip: {
-        trigger: "item",
-        // formatter: '{b}: {c}',
-        formater: function (params) {
-          return params.name + formatNumber(params.value)
+        ]
+      })
+
+  }
+  if (chart3) {
+    chart3.setOption(
+      {
+        tooltip: {
+          trigger: "item",
+          // formatter: '{b}: {c}',
+          formater: function (params) {
+            return params.name + formatNumber(params.value)
+          },
+          textStyle: {
+            fontWeight: 'bold'
+          }
         },
-        textStyle: {
-          fontWeight: 'bold'
-        }
-      },
-      xAxis: {
-        type: 'value',
-      },
-      grid: {
-        left: '5%', // 调整左边距
-        right: '5%', // 调整右边距
-        top: '5%',
-        bottom: '5%', // 调整底边距
-        containLabel: true // 自适应内容显示，防止内容溢出
-      },
-      yAxis: {
-        axisTick: { show: false }, // y轴刻度线
-        type: 'category',
-        data: categories, // ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        inverse: true,
-        minInterval: 1,
-        boundaryGap: [0, 0.01],
-        axisLabel: {
-          interval: 0 // 设置轴标签显示间隔为0，表示每个标签都显示
-        }
-      },
-      series: [
-        {
-          data: categoryData,  // [120, 200, 150, 80, 70, 110, 130],
-          type: 'bar',
-        }
-      ]
-    })
+        series: [
+          {
+            type: 'pie',
+            data: platformData,
+            label: {
+              show: true,
+              fontWeight: 'bold',
+              fontSize: 14,
+              formatter: function (params) {
+                return params.name + " \n" + params.percent.toFixed(2) + '%';
+              }
+            },
+          }
+        ]
+      })
+
+  }
+  if (chart4) {
+    chart4.setOption(
+      {
+        // dataZoom: [
+        //   {
+        //     type: 'slider',
+        //     show: true,
+        //     yAxisIndex: [0],
+        //     left: '50%',
+        //     start: 29,
+        //     end: 36
+        //   },
+        // ],
+        tooltip: {
+          trigger: "item",
+          // formatter: '{b}: {c}',
+          formater: function (params) {
+            return params.name + formatNumber(params.value)
+          },
+          textStyle: {
+            fontWeight: 'bold'
+          }
+        },
+        xAxis: {
+          type: 'value',
+        },
+        grid: {
+          left: '5%', // 调整左边距
+          right: '5%', // 调整右边距
+          top: '5%',
+          bottom: '5%', // 调整底边距
+          containLabel: true // 自适应内容显示，防止内容溢出
+        },
+        yAxis: {
+          axisTick: { show: false }, // y轴刻度线
+          type: 'category',
+          data: categories, // ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+          inverse: true,
+          minInterval: 1,
+          boundaryGap: [0, 0.01],
+          axisLabel: {
+            interval: 0 // 设置轴标签显示间隔为0，表示每个标签都显示
+          }
+        },
+        series: [
+          {
+            data: categoryData,  // [120, 200, 150, 80, 70, 110, 130],
+            type: 'bar',
+          }
+        ]
+      })
+  }
+
 }
 
-const distPlayPieChart = async () => {
+const disPlayPieChart = async () => {
   if (props.startTime && props.endTime) {
     if (props.report === 0) {
       // 初次访问次数
       const resp = await getCrawlStatsPieData({ st_time: props.startTime, ed_time: props.endTime })
-      const sliceCountry = resp.data.country.slice(0, 9)
+      const sliceCountry = resp.data.country?.slice(0, 9) ?? []
       const other = resp.data.country.slice(9).reduce((x, y) => x.count + y.count)
       sliceCountry.push({ country_name: '其他', count: other })
 
@@ -412,15 +420,25 @@ const distPlayPieChart = async () => {
 }
 
 onMounted(async () => {
+  console.log("mounted");
   await nextTick()
-  chart = echarts.init(line.value)
-  await displayLineReports()
-  await distPlayPieChart()
-  loading.value = false
+  try {
+    chart = echarts.init(line.value)
+    chart2 = echarts.init(pie1.value)
+    chart3 = echarts.init(pie2.value)
+    chart4 = echarts.init(pie3.value)
 
+    await displayLineReports()
+    await disPlayPieChart()
+  } catch (error) {
+    console.error("error ==> ", error)
+  } finally {
+    loading.value = false
+  }
 })
 
 onUnmounted(() => {
+  console.log('un mounted')
   if (chart) {
     chart.dispose()
     chart = null
@@ -447,14 +465,14 @@ onUnmounted(() => {
   width: 100%;
 }
 
+.card-pie {
+  background-color: #F2F6F9;
+  height: 250px;
+}
+
 .card-reports-pie {
   background-color: transparent;
   height: 190px;
   width: 100%;
-}
-
-.card-pie {
-  background-color: #F2F6F9;
-  height: 250px;
 }
 </style>
