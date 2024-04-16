@@ -14,7 +14,7 @@
             <div class="flex items-center justify-center">
 
               <img
-                class="w-24"
+                class="w-20 h-20 p-4"
                 :src="$GIN_VUE_ADMIN.appLogo"
                 alt
               >
@@ -85,7 +85,7 @@
                   @click="submitForm"
                 >登 录</el-button>
               </el-form-item>
-              <el-form-item class="mb-6">
+              <!-- <el-form-item class="mb-6">
                 <el-button
                   class="shadow shadow-blue-600 h-11 w-full"
                   type="primary"
@@ -93,7 +93,7 @@
                   @click="checkInit"
                 >前往初始化</el-button>
 
-              </el-form-item>
+              </el-form-item> -->
             </el-form>
           </div>
         </div>
@@ -105,7 +105,7 @@
       ></div>
     </div>
 
-    <BottomInfo class="left-0 right-0 absolute bottom-3 mx-auto  w-full z-20">
+    <!-- <BottomInfo class="left-0 right-0 absolute bottom-3 mx-auto  w-full z-20">
       <div class="links items-center justify-center gap-2 hidden md:flex">
         <a
           href="http://doc.henrongyi.top/"
@@ -148,7 +148,7 @@
           >
         </a>
       </div>
-    </BottomInfo>
+    </BottomInfo> -->
   </div>
 </template>
 

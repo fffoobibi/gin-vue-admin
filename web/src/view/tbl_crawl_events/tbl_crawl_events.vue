@@ -102,7 +102,6 @@ function confirmClick(ref) {
   ref.validate(async valid => {
     if (!valid) {
       form.loading = false
-      console.log('fail')
     } else {
       const resp = await createTblCrawlEvents({ title: form.title, details: form.details, occured_time: form.occurced_time })
       form.loading = false
@@ -120,8 +119,8 @@ const crawlData = reactive({
   pageSize: 10,
   totalCount: null,
   list: []
-
 })
+
 // 获取事件列表
 const getCrawlEventsList = async (currPage, pageSize) => {
   const resp = await getTblCrawlEventsList({ page: currPage, pageSize: pageSize })

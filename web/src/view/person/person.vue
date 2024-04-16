@@ -3,7 +3,7 @@
     <div class="grid grid-cols-12 w-full gap-2">
       <div class="col-span-3 h-full">
         <div class="w-full h-full bg-white px-4 py-8 rounded-lg shadow-lg box-border">
-          <div class="user-card px-6 text-center bg-white shrink-0">
+          <div class="user-card px-6 text-center bg-white shrink-0 h-full">
             <div class="flex justify-center">
               <SelectImage
                 v-model="userStore.userInfo.headerImg"
@@ -46,7 +46,7 @@
               </p>
               <p class="text-gray-500 mt-2 text-md">这个家伙很懒，什么都没有留下</p>
             </div>
-            <div class="w-full h-full text-left">
+            <!-- <div class="w-full h-full text-left">
               <ul class="inline-block h-full w-full">
                 <li class="info-list">
                   <el-icon>
@@ -87,7 +87,7 @@
                   </li>
                 </el-tooltip>
               </ul>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>

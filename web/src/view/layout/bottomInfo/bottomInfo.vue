@@ -2,7 +2,7 @@
 
 <template>
   <div class="flex gap-4 items-center text-sm text-gray-500 justify-center mb-4">
-    <span>Powered by</span>
+    <!-- <span>Powered by</span>
     <span>
       <a
         class="text-gray-800 font-bold"
@@ -16,7 +16,7 @@
         class="text-gray-800 font-bold"
         href="https://github.com/flipped-aurora"
       >flipped-aurora团队</a>
-    </span>
+    </span> -->
   </div>
 </template>
 

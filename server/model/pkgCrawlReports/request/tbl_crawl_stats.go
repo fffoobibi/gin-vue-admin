@@ -26,5 +26,6 @@ type TblCrawlStatsTimeSearchQuery struct {
 }
 
 type TblCrawlStatsPieDataQuery struct {
+	Report uint8 `json:"report" form:"report"`
 	*TblCrawlStatsTimeSearchQuery
 }

@@ -12,7 +12,7 @@ X-Token: {{user-token}}
 >>! 123.json
 
 ###
-GET http://127.0.0.1:8888/tblCrawlStats/getCrawlStatsPieData?st_time=2022-01-07
+GET http://127.0.0.1:8888/tblCrawlStats/getCrawlStatsPieData?st_time=2024-03-17&ed_time=2024-04-16
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}

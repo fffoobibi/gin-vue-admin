@@ -1,6 +1,7 @@
 package pkgCrawlReports
 
 import (
+	"encoding/json"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/response"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/pkgCrawlReports"
@@ -9,7 +10,6 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 type TblCrawlStatsApi struct {
@@ -186,20 +186,66 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceInfo(c *gin.Context) {
 // GetCrawlStatsPieData 获取饼图数据
 // @Router /tblCrawlStats/getCrawlStatsPieData [get]
 func (tblCrawlStatsApi *TblCrawlStatsApi) GetCrawlStatsPieData(c *gin.Context) {
-	var searchInfo pkgCrawlReportsReq.TblCrawlStatsPieDataQuery
-	err := c.ShouldBindQuery(&searchInfo)
+	var query pkgCrawlReportsReq.TblCrawlStatsPieDataQuery
+	err := c.ShouldBindQuery(&query)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
+
+	var result struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+		Data *struct {
+			Platform []struct {
+				Platform byte `json:"platform"`
+				Count    int  `json:"count"`
+			} `json:"platform"`
+			Category []*struct {
+				Name  string `json:"name"`
+				Count int    `json:"count"`
+			} `json:"category"`
+			Country []struct {
+				CountryName string `json:"country_name"`
+				Count       int    `json:"count"`
+			} `json:"country"`
+		}
+	}
 	// 接口调用
 	var values []byte
 	values, _ = utils.Get("https://gmen.mediamz.com/Api/crawlCountryPlatformCategoryPieData", map[string]string{
-		"st_time": searchInfo.StartTime + " 00:00:00",
-		"ed_time": searchInfo.EndTime + " 23:59:59",
+		"st_time": query.StartTime + " 00:00:00",
+		"ed_time": query.EndTime + " 23:59:59",
 	})
-	c.Header("Content-Type", "application/json;charset=utf-8")
-	c.String(http.StatusOK, string(values))
+	global.GVA_LOG.Info(string(values))
+	if err := json.Unmarshal(values, &result); err != nil {
+		global.GVA_LOG.Error("error in marshal:", zap.Error(err))
+	} else {
+		var categories []*struct {
+			Name  string `json:"name"`
+			Count int    `json:"count"`
+		}
+		var ms = map[string]*struct {
+			Name  string `json:"name"`
+			Count int    `json:"count"`
+		}{}
+		var categoriesMap = map[string]int{}
+
+		for index, category := range result.Data.Category {
+			if _, ok := ms[category.Name]; !ok {
+				ms[category.Name] = category
+				categoriesMap[category.Name] = index
+				categories = append(categories, category)
+			} else {
+				lookupIndex := categoriesMap[category.Name]
+				categories[lookupIndex].Count += category.Count
+			}
+		}
+		result.Data.Category = categories
+		response.OkWithDetailed(result.Data, "success", c)
+	}
+	//c.Header("Content-Type", "application/json;charset=utf-8")
+	//c.String(http.StatusOK, string(values))
 }
 
 // GetSummaryCrawlInfo 获取所有统计数据

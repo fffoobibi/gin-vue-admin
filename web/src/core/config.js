@@ -4,7 +4,7 @@
 
 const config = {
   appName: '淘金数据平台',
-  appLogo: 'https://www.gin-vue-admin.com/img/logo.png',
+  appLogo: 'src/assets/logo.png',//'https://www.gin-vue-admin.com/img/logo.png',
   showViteLogo: true,
   logs: [],
 }

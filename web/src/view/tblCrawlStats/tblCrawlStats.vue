@@ -42,17 +42,18 @@
                 </h4>
               </el-col>
               <el-col :span="8" :push="5">
-                <span @click="console.log('ffff')" style="cursor: pointer;">
+                <span @click="router.push({ name: 'e' })" style="cursor: pointer;">
                   更多...
                 </span>
               </el-col>
             </el-row>
             <el-scrollbar height="150px">
               <div style="height: 180px;">
-                <div v-for="log in logs" style="margin-bottom: 10px;">
-                  <p style="font-weight: bold;margin-bottom: 5px;">{{ log.title }}</p>
-                  <span>{{ log.detail }}</span>
-                  <p style="text-align: right;color:gray;font-size:9pt">2024.4.12</p>
+                <div v-for="log in summaryInfo.events" style="margin-bottom: 10px;">
+                  <p style="font-weight: bold;margin-bottom: 5px;margin-right: 20px">{{ log.title }}</p>
+                  <p style="margin-right: 20px">{{ log.details }}</p>
+                  <p style="text-align: right;color:gray;font-size:9pt;margin-right: 20px">
+                    {{ formatTimeToStr(log.occurced_time, "yyyy-MM-dd") }}</p>
                 </div>
               </div>
             </el-scrollbar>
@@ -89,29 +90,31 @@
           </el-col>
 
         </el-row>
-        <div class="data-tab">
-          <ul class="list-inline">
-            <li :class="ac0" @click="clickReportsTab(0)">
-              <p>首次抓取次数</p>
-              <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
-            </li>
-            <li :class="ac1" @click="clickReportsTab(1)">
-              <p>有效资源数</p>
-              <span>{{ formatNumber(summaryInfo.validCount) }}</span>
-            </li>
-            <li :class="ac2" @click="clickReportsTab(2)">
-              <p>数据清洗</p>
-              <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
-            </li>
-            <li :class="ac3" @click="clickReportsTab(3)">
-              <p>总资源库更新</p>
-              <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
-            </li>
-          </ul>
+        <div v-loading="summaryInfoLoading">
+          <div class="data-tab">
+            <ul class="list-inline">
+              <li :class="ac0" @click="clickReportsTab(0)">
+                <p>首次抓取次数</p>
+                <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
+              </li>
+              <li :class="ac1" @click="clickReportsTab(1)">
+                <p>有效资源数</p>
+                <span>{{ formatNumber(summaryInfo.validCount) }}</span>
+              </li>
+              <li :class="ac2" @click="clickReportsTab(2)">
+                <p>数据清洗</p>
+                <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
+              </li>
+              <li :class="ac3" @click="clickReportsTab(3)">
+                <p>总资源库更新</p>
+                <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
+              </li>
+            </ul>
+          </div>
+          <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p>
+          <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current"
+            :line-title="lineTitle" />
         </div>
-        <!-- </el-affix> -->
-        <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p>
-        <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current" />
       </el-card>
 
     </el-row>
@@ -122,7 +125,8 @@
 <script setup>
 
 // 全量引入格式化工具 请按需保留
-import { reactive, ref, onMounted, nextTick, computed } from 'vue'
+import { reactive, ref, onMounted, nextTick, computed, watch } from 'vue'
+import { useRouter } from "vue-router"
 import { formatTimeToStr } from '@/utils/date'
 import { getTotalResourceInfo, getSummaryCrawlInfo } from '@/api/tblCrawlStats'
 import * as echarts from 'echarts'
@@ -133,6 +137,7 @@ defineOptions({
   name: 'TblCrawlStats'
 })
 
+const router = useRouter()
 const dft_end = new Date()
 const dft_start = new Date()
 dft_start.setTime(dft_start.getTime() - 3600 * 1000 * 24 * 30)
@@ -146,7 +151,36 @@ const ed_time = ref(formatTimeToStr(dft_end, 'yyyy-MM-dd'))
 const timeValue = ref([formatTimeToStr(dft_start), formatTimeToStr(dft_end)])
 const report = ref(0)
 
+watch([st_time, ed_time], () => {
+  disPlaySummaryInfo(st_time.value, ed_time.value)
+})
+
+const lineTitle = computed(() => {
+  const startDate = new Date(st_time.value);
+  const endDate = new Date(ed_time.value);
+  if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    throw new Error('Invalid date string');
+  }
+  const timeDifference = Math.abs(endDate - startDate);
+
+  const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24))
+  let msg
+  if (report.value === 0) {
+    msg = " 首次抓取次数 "
+  } else if (report.value === 1) {
+    msg = " 有效资源数 "
+  } else if (report.value === 2) {
+    msg = " 数据清洗 "
+  } else if (report.value === 3) {
+    msg = " 总资源库更新 "
+  } else {
+    msg = ""
+  }
+  return `${daysDifference}天的${msg}统计数据`
+})
+
 const reportTip = computed(() => {
+  disPlaySummaryInfo(st_time.value, ed_time.value)
   if (report.value == 0) {
     return "*注:抓取次数指访问社媒平台的次数"
   } else if (report.value == 1) {
@@ -183,189 +217,205 @@ const setTotalPies = () => {
   if (chat1 === null) {
     chat1 = echarts.init(c1.value)
   }
-  chat1.setOption(
-    {
-      // tooltip: {
-      //   trigger: 'item',
-      //   formatter: function (params) {
-      //     return `${params.value} 占比%`
-      //   }
-      // },
-      legend: {
-        orient: 'vertical',
-        x: 'right',
-        y: '20%',
-        itemWidth: 0,
-        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
-        textStyle: {
-          color: '#fff',
-          fontSize: 12,
-        },
-        selectedMode: false, //取消图例上的点击事件
+  if (chat1) {
+    chat1.setOption(
+      {
+        // tooltip: {
+        //   trigger: 'item',
+        //   formatter: function (params) {
+        //     return `${params.value} 占比%`
+        //   }
+        // },
+        legend: {
+          orient: 'vertical',
+          x: 'right',
+          y: '20%',
+          itemWidth: 0,
+          // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
+          textStyle: {
+            color: '#fff',
+            fontSize: 12,
+          },
+          selectedMode: false, //取消图例上的点击事件
 
-      },
-      formatter: (name) => {
-        let data = ''
-        if (name === 'Tiktok') {
-          data = (Number(totalResourceInfo.Tiktok / totalResourceInfo.total_count) * 100).toFixed()
-          const text = `${name} ${data}%`
-          return `${text}`
-        }
-      },
-      color: ['#FF9600', '#72B9FF'],
-      series: [
-        {
-          type: 'pie',
-          data: [
-            {
-              value: totalResourceInfo.Tiktok,
-              name: 'Tiktok',
-              label: {
-                show: false,
-              },
-            },
-            {
-              value: totalResourceInfo.Youtube + totalResourceInfo.Instagram,
-              name: ''
-            }
-          ],
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
+        },
+        formatter: (name) => {
+          let data = ''
+          if (name === 'Tiktok') {
+            data = (Number(totalResourceInfo.Tiktok / totalResourceInfo.total_count) * 100).toFixed()
+            const text = `${name} ${data}%`
+            return `${text}`
           }
         },
+        color: ['#FF9600', '#72B9FF'],
+        series: [
+          {
+            type: 'pie',
+            data: [
+              {
+                value: totalResourceInfo.Tiktok,
+                name: 'Tiktok',
+                label: {
+                  show: false,
+                },
+              },
+              {
+                value: totalResourceInfo.Youtube + totalResourceInfo.Instagram,
+                name: ''
+              }
+            ],
+            radius: ['40%', '70%'],
+            labelLine: {
+              show: false
+            }
+          },
 
-      ]
-    })
+        ]
+      })
+
+  }
 
   if (chat2 === null) {
     chat2 = echarts.init(c2.value)
   }
-  chat2.setOption(
-    {
-      // tooltip: {
-      //   trigger: 'item',
-      //   formatter: function (params) {
-      //     return `${params.value} 占比%`
-      //   }
-      // },
-      legend: {
-        orient: 'vertical',
-        x: 'right',
-        y: '20%',
-        itemWidth: 0,
-        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
-        textStyle: {
-          color: '#fff',
-          fontSize: 12,
+  if (chat2) {
+    chat2.setOption(
+      {
+        // tooltip: {
+        //   trigger: 'item',
+        //   formatter: function (params) {
+        //     return `${params.value} 占比%`
+        //   }
+        // },
+        legend: {
+          orient: 'vertical',
+          x: 'right',
+          y: '20%',
+          itemWidth: 0,
+          // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
+          textStyle: {
+            color: '#fff',
+            fontSize: 12,
+          },
+          selectedMode: false
         },
-        selectedMode: false
-      },
-      formatter: (name) => {
-        let data = ''
-        if (name === 'Youtube') {
-          data = (Number(totalResourceInfo.Youtube / totalResourceInfo.total_count) * 100).toFixed()
-          const text = `${name} ${data}%`
-          return `${text}`
-        }
-      },
-      color: ['#FF9600', '#72B9FF'],
-      series: [
-        {
-          type: 'pie',
-          data: [
-            {
-              value: totalResourceInfo.Youtube,
-              name: 'Youtube'
+        formatter: (name) => {
+          let data = ''
+          if (name === 'Youtube') {
+            data = (Number(totalResourceInfo.Youtube / totalResourceInfo.total_count) * 100).toFixed()
+            const text = `${name} ${data}%`
+            return `${text}`
+          }
+        },
+        color: ['#FF9600', '#72B9FF'],
+        series: [
+          {
+            type: 'pie',
+            data: [
+              {
+                value: totalResourceInfo.Youtube,
+                name: 'Youtube'
+              },
+              {
+                value: totalResourceInfo.Tiktok + totalResourceInfo.Instagram,
+                name: ''
+              }
+            ],
+            radius: ['40%', '70%'],
+            labelLine: {
+              show: false
             },
-            {
-              value: totalResourceInfo.Tiktok + totalResourceInfo.Instagram,
-              name: ''
-            }
-          ],
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
-          },
-          label: {
-            show: false,
-          },
-        }
-      ]
-    })
+            label: {
+              show: false,
+            },
+          }
+        ]
+      })
+  }
 
   if (chat3 === null) {
     chat3 = echarts.init(c3.value)
   }
-  chat3.setOption(
-    {
-      // tooltip: {
-      //   trigger: 'item',
-      //   formatter: function(params) {
-      //     return `${params.value} 占比%`
-      //   }
-      // },
-      legend: {
-        orient: 'vertical',
-        x: 'right',
-        y: '20%',
-        itemWidth: 0,
-        // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
-        textStyle: {
-          color: '#fff',
-          fontSize: 12,
+  if (chat3) {
+    chat3.setOption(
+      {
+        // tooltip: {
+        //   trigger: 'item',
+        //   formatter: function(params) {
+        //     return `${params.value} 占比%`
+        //   }
+        // },
+        legend: {
+          orient: 'vertical',
+          x: 'right',
+          y: '20%',
+          itemWidth: 0,
+          // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
+          textStyle: {
+            color: '#fff',
+            fontSize: 12,
+          },
+          selectedMode: false
         },
-        selectedMode: false
-      },
-      formatter: (name) => {
-        let data = ''
-        if (name === 'Instagram') {
-          data = (Number(totalResourceInfo.Instagram / totalResourceInfo.total_count) * 100).toFixed()
-          const text = `${name} ${data}%`
-          return `${text}`
-        }
-      },
-      color: ['#FF9600', '#72B9FF'],
-      series: [
-        {
-          type: 'pie',
-          data: [
-            {
-              value: totalResourceInfo.Instagram,
-              name: 'Instagram'
+        formatter: (name) => {
+          let data = ''
+          if (name === 'Instagram') {
+            data = (Number(totalResourceInfo.Instagram / totalResourceInfo.total_count) * 100).toFixed()
+            const text = `${name} ${data}%`
+            return `${text}`
+          }
+        },
+        color: ['#FF9600', '#72B9FF'],
+        series: [
+          {
+            type: 'pie',
+            data: [
+              {
+                value: totalResourceInfo.Instagram,
+                name: 'Instagram'
+              },
+              {
+                value: totalResourceInfo.Youtube + totalResourceInfo.Tiktok,
+                name: ''
+              }
+            ],
+            radius: ['40%', '70%'],
+            labelLine: {
+              show: false
             },
-            {
-              value: totalResourceInfo.Youtube + totalResourceInfo.Tiktok,
-              name: ''
-            }
-          ],
-          radius: ['40%', '70%'],
-          labelLine: {
-            show: false
-          },
-          label: {
-            show: false,
-          },
-        }
-      ]
-    })
+            label: {
+              show: false,
+            },
+          }
+        ]
+      })
+  }
 }
+
+const summaryInfoLoading = ref(false)
 
 const summaryInfo = reactive({
   crawlCount: 0,
   validCount: 0,
   cleanCount: 0,
   updateCount: 0,
-  totalCount: 0
+  totalCount: 0,
+  events: []
 })
 
 const disPlaySummaryInfo = async (st_time, ed_time) => {
-  const resp = await getSummaryCrawlInfo({ st_time, ed_time })
-  summaryInfo.crawlCount = resp.data.crawl_count
-  summaryInfo.validCount = resp.data.valid_count
-  summaryInfo.cleanCount = resp.data.clean_count
-  summaryInfo.updateCount = resp.data.update_count
-  summaryInfo.totalCount = resp.data.total_count
+  try {
+    summaryInfoLoading.value = true
+    const resp = await getSummaryCrawlInfo({ st_time, ed_time })
+    summaryInfo.crawlCount = resp.data.crawl_count
+    summaryInfo.validCount = resp.data.valid_count
+    summaryInfo.cleanCount = resp.data.clean_count
+    summaryInfo.updateCount = resp.data.update_count
+    summaryInfo.totalCount = resp.data.total_count
+    summaryInfo.events = resp.data.events
+  } finally {
+    summaryInfoLoading.value = false
+  }
 }
 
 onMounted(async () => {
@@ -402,7 +452,6 @@ const handleGroup = (val) => {
 const dateChange = (val) => {
   st_time.value = val[0]
   ed_time.value = val[1]
-  console.log(st_time.value, ed_time.value)
 }
 
 const clickReportsTab = (type) => {
@@ -422,15 +471,17 @@ const clickReportsTab = (type) => {
   report.value = type
 }
 
-const logs = ref([
-  { title: '印度服务器添加', detail: '3月17日印度新服务器新增资源数突破1器新增资源数突破100W同比上升20%3月17日印度新服务器新增资源数突破' },
-  { title: '印度服务器添加', detail: '3月17日印度新服务器新增资源数突破1器新增资源数突破100W同比上升20%3月17日印度新服务器新增资源数突破' },
-  { title: '印度服务器添加', detail: '3月17日印度新服务器新增资源数突破1器新增资源数突破100W同比上升20%3月17日印度新服务器新增资源数突破' },
-  { title: '印度服务器添加', detail: '3月17日印度新服务器新增资源数突破1器新增资源数突破100W同比上升20%3月17日印度新服务器新增资源数突破' },
-
-])
 
 const shortcuts = [
+  {
+    text: '近14天',
+    value: () => {
+      const end = new Date()
+      const start = new Date()
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 14)
+      return [start, end]
+    },
+  },
   {
     text: '近30天',
     value: () => {

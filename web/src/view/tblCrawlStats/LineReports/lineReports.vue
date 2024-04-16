@@ -66,8 +66,10 @@ const props = defineProps({
   group: {
     type: String,
     required: true
+  },
+  lineTitle: {
+    type: String
   }
-
 })
 
 const dataZoom = () => {
@@ -105,7 +107,7 @@ const dataZoom = () => {
 
 let chart = null
 const line = ref(null)
-const { startTime, endTime, report, group } = toRefs(props)
+const { startTime, endTime, report, group, lineTitle } = toRefs(props)
 const loading = ref(true)
 
 watch([startTime, endTime, group, report], async (newVal, oldVal) => {
@@ -126,6 +128,13 @@ const renderLineChart = (legendData, xdata, ydata) => {
     chart = echarts.init(line.value)
   }
   chart.setOption({
+    title: {
+      text: lineTitle?.value,
+      textStyle: {
+        fontSize: 14
+      },
+      padding: [8, 15]
+    },
     legend: {
       textStyle: { fontWeight: 'bold' },
       data: legendData,
@@ -409,7 +418,7 @@ const disPlayPieChart = async () => {
       })
       const categoris = []
       const categoryData = []
-      resp.data.category.slice(0, 7).forEach(v => {
+      resp.data.category.slice(0, 7).sort((a, b) => b.count - a.count).forEach(v => {
         categoris.push(v.name)
         categoryData.push(v.count)
       })
@@ -420,7 +429,6 @@ const disPlayPieChart = async () => {
 }
 
 onMounted(async () => {
-  console.log("mounted");
   await nextTick()
   try {
     chart = echarts.init(line.value)
@@ -438,7 +446,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  console.log('un mounted')
   if (chart) {
     chart.dispose()
     chart = null
