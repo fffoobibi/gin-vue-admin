@@ -15,7 +15,7 @@
 
               <img
                 class="w-20 h-20 p-4"
-                :src="$GIN_VUE_ADMIN.appLogo"
+                src="@/assets/logo.png"
                 alt
               >
             </div>
