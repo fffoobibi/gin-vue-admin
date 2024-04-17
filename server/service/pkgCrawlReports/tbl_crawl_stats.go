@@ -165,25 +165,25 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 		Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query crawl count", zap.Error(err))
 	}
-	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResource{}).
+	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResource{}).Debug().
 		Select("COUNT(*) as valid_count").
 		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query valid count", zap.Error(err))
 	}
 
-	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResourceClean{}).
+	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResourceClean{}).Debug().
 		Select("COUNT(*) as clean_count").
 		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query clean count", zap.Error(err))
 	}
 
-	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).
+	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).Debug().
 		Select("SUM(count) as update_count").
 		Where("create_time >= ? AND create_time <= ? AND (name LIKE ? or name LIKE ? or name Like ?)", midnightTimestamp, endOfDayTimestamp, "%total-resource-tiktok%", "%total-resource-ytb%", "%total-resource-ins%").Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query update count", zap.Error(err))
 	}
 
-	if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_marketing_total_resource").
+	if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_marketing_total_resource").Debug().
 		Select("COUNT(*) as total_count").
 		Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query total count", zap.Error(err))

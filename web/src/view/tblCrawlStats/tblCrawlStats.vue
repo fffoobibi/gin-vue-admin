@@ -9,7 +9,9 @@
               <p style="color: white; font-weight: bold; margin-top: 20px;margin-bottom:20px;font-size: 12pt;">
                 <svg-icon name="icon-data" color="red" style="width:16px;height:16px" />
                 当前在库数量
-                <svg-icon name="icon-tips" color="red" style="width:16px;height:16px" />
+                <el-tooltip effect="dark" content="总资源库当前在库数量" placement="top">
+                  <svg-icon name="icon-tips" color="red" style="width:16px;height:16px" />
+                </el-tooltip>
               </p>
             </el-row>
 
@@ -34,12 +36,13 @@
         </el-col>
 
         <el-col>
-          <el-card style="height: 250px; width: 420px" class="radius-10">
+          <el-card style="height: 250px; width: 420px" class="rounded-10">
             <el-row justify="space-between" align="middle">
-              <el-col :span="16">
-                <h4>
-                  <svg-icon name="icon-bigdeal" style="width:16px;height:16px" />大事记
-                </h4>
+              <el-col :span="16" class="flex items-center">
+                <img src="@/assets/icons/icon-bigdeal.svg" class="h w-4 mr-2 py-2" />
+                <span class="text-lg font-bold">
+                  大事记
+                </span>
               </el-col>
               <el-col :span="8" :push="5">
                 <span @click="router.push({ name: 'e' })" style="cursor: pointer;">
@@ -47,10 +50,11 @@
                 </span>
               </el-col>
             </el-row>
-            <el-scrollbar height="150px">
+            <el-scrollbar height="160px">
               <div style="height: 180px;">
                 <div v-for="log in summaryInfo.events" style="margin-bottom: 10px;">
-                  <p style="font-weight: bold;margin-bottom: 5px;margin-right: 20px">{{ log.title }}</p>
+                  <p style="font-weight: bold;margin-bottom: 5px;margin-right: 20px"><svg-icon name="icon-circle"
+                      style="width:8px;height:8px;padding-right: 3px" />{{ log.title }}</p>
                   <p style="margin-right: 20px">{{ log.details }}</p>
                   <p style="text-align: right;color:gray;font-size:9pt;margin-right: 20px">
                     {{ formatTimeToStr(log.occurced_time, "yyyy-MM-dd") }}</p>
@@ -66,7 +70,7 @@
     <el-row justify="center">
       <el-card class="radius-10 report-card" body-class="no-padding">
         <!-- <el-affix :offset="98"> -->
-        <el-row justify="space-between" align="middle" class="padding-5 report-header">
+        <el-row justify="start" align="middle" class="padding-5 report-header" gutter="10">
           <el-col :span="4">
             <h3>
               <svg-icon name="icon-menu" style="width: 20px; height:20px" />
@@ -74,18 +78,17 @@
             </h3>
           </el-col>
 
-          <el-col :offset="10" :span="2.9">
+          <el-col :span="3" :push="12">
             <div class="week">
               <span :class="group.g0" @click="handleGroup(0)">日</span>
               <span :class="group.g1" @click="handleGroup(1)">周</span>
               <span :class="group.g2" @click="handleGroup(2)">月</span>
             </div>
-
           </el-col>
 
-          <el-col :span="5">
-            <el-date-picker v-model="timeValue" style="width: 240px" type="daterange" :shortcuts="shortcuts"
-              range-separator="-" start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
+          <el-col :span="5" :push="12" class="flex">
+            <el-date-picker v-model="timeValue" type="daterange" :shortcuts="shortcuts" range-separator="-"
+              start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
               @change="dateChange" />
           </el-col>
 
@@ -228,35 +231,34 @@ const setTotalPies = () => {
         // },
         legend: {
           orient: 'vertical',
-          x: 'right',
+          x: '70%',
           y: '20%',
           itemWidth: 0,
           // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
           textStyle: {
             color: '#fff',
-            fontSize: 12,
+            fontSize: 13,
           },
           selectedMode: false, //取消图例上的点击事件
-
-        },
-        formatter: (name) => {
-          let data = ''
-          if (name === 'Tiktok') {
-            data = (Number(totalResourceInfo.Tiktok / totalResourceInfo.total_count) * 100).toFixed()
-            const text = `${name} ${data}%`
-            return `${text}`
-          }
+          formatter: (name) => {
+            return "TikTok"
+          },
         },
         color: ['#FF9600', '#72B9FF'],
         series: [
           {
+            alignTo: 'edge',
             type: 'pie',
             data: [
               {
                 value: totalResourceInfo.Tiktok,
                 name: 'Tiktok',
                 label: {
-                  show: false,
+                  show: true,
+                  position: 'center',
+                  formatter: "{d}%",
+                  backgroundColor: "transparent",
+                  color: "white"
                 },
               },
               {
@@ -295,26 +297,36 @@ const setTotalPies = () => {
           // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
           textStyle: {
             color: '#fff',
-            fontSize: 12,
+            fontSize: 13,
           },
-          selectedMode: false
+          selectedMode: false,
+          formatter: (name) => {
+            // let data = ''
+            // if (name === 'Youtube') {
+            //   data = (Number(totalResourceInfo.Youtube / totalResourceInfo.total_count) * 100).toFixed()
+            //   const text = `${name} ${data}%`
+            //   return `${text}`
+            // }
+            return name
+          },
         },
-        formatter: (name) => {
-          let data = ''
-          if (name === 'Youtube') {
-            data = (Number(totalResourceInfo.Youtube / totalResourceInfo.total_count) * 100).toFixed()
-            const text = `${name} ${data}%`
-            return `${text}`
-          }
-        },
+
         color: ['#FF9600', '#72B9FF'],
         series: [
           {
+            alignTo: 'edge',
             type: 'pie',
             data: [
               {
                 value: totalResourceInfo.Youtube,
-                name: 'Youtube'
+                name: 'Youtube',
+                label: {
+                  show: true,
+                  position: 'center',
+                  formatter: "{d}%",
+                  backgroundColor: "transparent",
+                  color: "white"
+                },
               },
               {
                 value: totalResourceInfo.Tiktok + totalResourceInfo.Instagram,
@@ -353,26 +365,35 @@ const setTotalPies = () => {
           // padding:['0%','20%','50%','0%'], //可设定图例[距上方距离，距右方距离，距下方距离，距左方距离]
           textStyle: {
             color: '#fff',
-            fontSize: 12,
+            fontSize: 13,
           },
-          selectedMode: false
-        },
-        formatter: (name) => {
-          let data = ''
-          if (name === 'Instagram') {
-            data = (Number(totalResourceInfo.Instagram / totalResourceInfo.total_count) * 100).toFixed()
-            const text = `${name} ${data}%`
-            return `${text}`
-          }
+          selectedMode: false,
+          formatter: (name) => {
+            return name
+            // let data = ''
+            // if (name === 'Instagram') {
+            //   data = (Number(totalResourceInfo.Instagram / totalResourceInfo.total_count) * 100).toFixed()
+            //   const text = `${name} ${data}%`
+            //   return `${text}`
+            // }
+          },
         },
         color: ['#FF9600', '#72B9FF'],
         series: [
           {
+            alignTo: 'edge',
             type: 'pie',
             data: [
               {
                 value: totalResourceInfo.Instagram,
-                name: 'Instagram'
+                name: 'Instagram',
+                label: {
+                  show: true,
+                  position: 'center',
+                  formatter: "{d}%",
+                  backgroundColor: "transparent",
+                  color: "white"
+                },
               },
               {
                 value: totalResourceInfo.Youtube + totalResourceInfo.Tiktok,
@@ -382,9 +403,6 @@ const setTotalPies = () => {
             radius: ['40%', '70%'],
             labelLine: {
               show: false
-            },
-            label: {
-              show: false,
             },
           }
         ]
@@ -543,8 +561,6 @@ const shortcuts = [
   margin-top: 5px;
 }
 
-
-
 .report-header {
   background: #F1F5F9;
 }
@@ -571,6 +587,7 @@ const shortcuts = [
   background-color: #fff;
   padding: 7px 12px;
   border-radius: 12px;
+  justify-content: center;
 }
 
 .week span {

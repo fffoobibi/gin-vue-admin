@@ -256,16 +256,6 @@ const pie3 = ref(null)
 
 
 const renderPieCharts = (countryData, platformData, categories, categoryData, reportType = 0) => {
-  // if (!chart2) {
-  //   chart2 = echarts.init(pie1.value)
-  // }
-  // if (!chart3) {
-  //   chart3 = echarts.init(pie2.value)
-  // }
-
-  // if (!chart4) {
-  //   chart4 = echarts.init(pie3.value)
-  // }
   if (chart2) {
     chart2.setOption(
       {
@@ -277,9 +267,12 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
         },
         tooltip: {
           trigger: "item",
-          // formatter: '{b} {c} {d}%'
+          // formatter: '{b} {c} {d}%',
+          textStyle: {
+            fontWeight: 'bold'
+          },
           formatter: function (params) {
-            return params.name + params.value + params.percent + '%';
+            return params.name + " " + params.value + " " + params.percent + '%';
           }
         },
         series: [

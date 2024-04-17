@@ -47,3 +47,10 @@ GET http://127.0.0.1:8888/e/getTblCrawlEventsList?st_time=2024-01-01&ed_time=202
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}
+
+
+### 获取总资源库数据情况
+GET http://127.0.0.1:8888/tblCrawlStats/getTotalResourceInfo
+Accept: application/json
+X-User-Id: {{user-id}}
+X-Token: {{user-token}}

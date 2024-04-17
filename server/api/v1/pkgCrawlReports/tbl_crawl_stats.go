@@ -10,6 +10,8 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
+	"sync"
 )
 
 type TblCrawlStatsApi struct {
@@ -173,14 +175,32 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetFirstCrawlReportsList(c *gin.Contex
 // @Router /tblCrawlStats/getTotalResourceInfo [get]
 func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceInfo(c *gin.Context) {
 
-	// mock
-	data := gin.H{
-		"total":     354710,
-		"Tiktok":    177800,
-		"Youtube":   84123,
-		"Instagram": 22344,
+	var rs struct {
+		Total     *int64 `json:"total"`
+		Tiktok    *int64 `json:"Tiktok"`
+		Youtube   *int64 `json:"Youtube"`
+		Instagram *int64 `json:"Instagram"`
 	}
-	response.OkWithDetailed(data, "获取成功", c)
+	var wait sync.WaitGroup
+	wait.Add(4)
+	var conditions = map[string][]string{
+		"total":     {"platform in (1,2,3)"},
+		"Tiktok":    {"platform = 1"},
+		"Youtube":   {"platform = 2"},
+		"Instagram": {"platform = 3"},
+	}
+
+	for k, v := range conditions {
+		go func(f, c string) {
+			if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_marketing_total_resource").Select("COUNT(*) as " + f).
+				Where(c).Scan(&rs).Error; err != nil {
+				global.GVA_LOG.Error("error in query", zap.Error(err))
+			}
+			wait.Done()
+		}(k, v[0])
+	}
+	wait.Wait()
+	response.OkWithDetailed(rs, "获取成功", c)
 }
 
 // GetCrawlStatsPieData 获取饼图数据
@@ -193,31 +213,43 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetCrawlStatsPieData(c *gin.Context) {
 		return
 	}
 
-	var result struct {
-		Code int    `json:"code"`
-		Msg  string `json:"msg"`
-		Data *struct {
-			Platform []struct {
-				Platform byte `json:"platform"`
-				Count    int  `json:"count"`
-			} `json:"platform"`
-			Category []*struct {
-				Name  string `json:"name"`
-				Count int    `json:"count"`
-			} `json:"category"`
-			Country []struct {
-				CountryName string `json:"country_name"`
-				Count       int    `json:"count"`
-			} `json:"country"`
-		}
-	}
-	// 接口调用
+	//接口调用
 	var values []byte
+	report := strconv.Itoa(int(query.Report))
+
+	switch query.Report {
+	case 0:
+		var result struct {
+			Code int    `json:"code"`
+			Msg  string `json:"msg"`
+			Data *struct {
+				Platform []struct {
+					Platform byte `json:"platform"`
+					Count    int  `json:"count"`
+				} `json:"platform"`
+				Category []*struct {
+					Name  string `json:"name"`
+					Count int    `json:"count"`
+				} `json:"category"`
+				Country []struct {
+					CountryName string `json:"country_name"`
+					Count       int    `json:"count"`
+				} `json:"country"`
+			}
+		}
+		global.GetGlobalDBByDBName("mediamz").Select().Scan()
+	case 1:
+	case 2:
+	case 3:
+
+	}
+
 	values, _ = utils.Get("https://gmen.mediamz.com/Api/crawlCountryPlatformCategoryPieData", map[string]string{
 		"st_time": query.StartTime + " 00:00:00",
 		"ed_time": query.EndTime + " 23:59:59",
+		"report":  report,
 	})
-	global.GVA_LOG.Info(string(values))
+	//global.GVA_LOG.Info(string(values))
 	if err := json.Unmarshal(values, &result); err != nil {
 		global.GVA_LOG.Error("error in marshal:", zap.Error(err))
 	} else {
