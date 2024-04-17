@@ -113,6 +113,7 @@ const loading = ref(true)
 watch([startTime, endTime, group, report], async (newVal, oldVal) => {
   chart.showLoading({ text: '' })
   await displayLineReports()
+  await disPlayPieChart()
   chart.hideLoading()
 }, { immediate: false })
 
@@ -390,33 +391,34 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
 
 const disPlayPieChart = async () => {
   if (props.startTime && props.endTime) {
-    if (props.report === 0) {
-      // 初次访问次数
-      const resp = await getCrawlStatsPieData({ st_time: props.startTime, ed_time: props.endTime })
-      const sliceCountry = resp.data.country?.slice(0, 9) ?? []
-      const other = resp.data.country.slice(9).reduce((x, y) => x.count + y.count)
-      sliceCountry.push({ country_name: '其他', count: other })
+    // if (props.report === 0) {
+    // 初次访问次数
+    const resp = await getCrawlStatsPieData({ st_time: props.startTime, ed_time: props.endTime, report: props.report })
+    const sliceCountry = resp.data.country?.slice(0, 9) ?? []
+    const other = (resp.data.country ?? []).slice(9).reduce((x, y) => x.count + y.count, 0)
+    sliceCountry.push({ country_name: '其他', count: other })
 
-      const country = sliceCountry.map(v => ({ name: v.country_name, value: v.count }))
-      const platform = resp.data.platform.map(v => {
-        let name
-        if (v.platform == 1) {
-          name = 'TikTok'
-        } else if (v.platform == 2) {
-          name = 'Youtube'
-        } else {
-          name = 'Instagram'
-        }
-        return { name: name, value: v.count }
-      })
-      const categoris = []
-      const categoryData = []
-      resp.data.category.slice(0, 7).sort((a, b) => b.count - a.count).forEach(v => {
-        categoris.push(v.name)
-        categoryData.push(v.count)
-      })
-      renderPieCharts(country, platform, categoris, categoryData)
-    }
+    const country = sliceCountry.map(v => ({ name: v.country_name, value: v.count }))
+    const platform = (resp.data.platform ?? []).map(v => {
+      let name
+      if (v.platform == 1) {
+        name = 'TikTok'
+      } else if (v.platform == 2) {
+        name = 'Youtube'
+      } else {
+        name = 'Instagram'
+      }
+      return { name: name, value: v.count }
+    })
+    const categoris = []
+    const categoryData = []
+    const cs = resp.data.category ?? []
+    cs.slice(0, 7).sort((a, b) => b.count - a.count).forEach(v => {
+      categoris.push(v.name)
+      categoryData.push(v.count)
+    })
+    renderPieCharts(country, platform, categoris, categoryData)
+    // }
   }
 
 }

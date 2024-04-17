@@ -1,14 +1,15 @@
 package pkgCrawlReports
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/pkgCrawlReports"
 	pkgCrawlReportsReq "github.com/flipped-aurora/gin-vue-admin/server/model/pkgCrawlReports/request"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"strings"
 	"sync"
-	"time"
 )
 
 type TblCrawlStatsService struct {
@@ -76,57 +77,35 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTblCrawlStatsInfoList(info 
 
 // GetFirstCrawlCount 获取初次访问次数
 func (tblCrawlStatsService *TblCrawlStatsService) GetFirstCrawlCount(info pkgCrawlReportsReq.TblCrawlStatsSearchQuery) (map[string][]map[string]interface{}, error) {
-	if info.StartTime != "" {
-		t, _ := time.Parse("2006-01-02", info.StartTime)
-		info.StartCreatedAt = &t
+
+	midnightTimestamp, endOfDayTimestamp := info.GetTimeStamps()
+
+	conditions := map[string][]string{
+		"tiktok":    {"%tiktok%", "%tt%"},
+		"youtube":   {"%youtube%", "%ytb%"},
+		"instagram": {"%instagram%", "%ins%"},
 	}
 
-	if info.EndTime != "" {
-		t, _ := time.Parse("2006-01-02", info.EndTime)
-		info.EndCreatedAt = &t
-	}
+	var rs = map[string][]map[string]any{}
 
-	if info.StartCreatedAt != nil && info.EndCreatedAt != nil {
-		s1 := info.StartCreatedAt
-		s2 := info.EndCreatedAt
-		location, _ := time.LoadLocation("Asia/Shanghai")
-		midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
-		endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
+	for key, value := range conditions {
+		var list []map[string]interface{}
+		db := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{})
+		err := db.Select("ip, name, count, FROM_UNIXTIME(create_time, '%Y-%m-%d') as date").
+			Where("(name LIKE ? or name LIKE ?) AND create_time >= ? AND create_time <= ?",
+				value[0],
+				value[1],
+				midnightTimestamp, endOfDayTimestamp,
+			).Order("create_time").Scan(&list).Error
 
-		global.GVA_LOG.Info("start time", zap.String("end", fmt.Sprintf("%s", endOfDay)))
-
-		midnightTimestamp := midnight.Unix()
-		endOfDayTimestamp := endOfDay.Unix()
-
-		global.GVA_LOG.Debug("s ,t ", zap.Int64("start", midnightTimestamp), zap.Int64("end", endOfDayTimestamp))
-
-		conditions := map[string][]string{
-			"tiktok":    {"%tiktok%", "%tt%"},
-			"youtube":   {"%youtube%", "%ytb%"},
-			"instagram": {"%instagram%", "%ins%"},
+		if err != nil {
+			global.GVA_LOG.Error("error in query", zap.Error(err))
 		}
-
-		var rs = map[string][]map[string]any{}
-
-		for key, value := range conditions {
-			var list []map[string]interface{}
-			db := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{})
-			err := db.Select("ip, name, count, FROM_UNIXTIME(create_time, '%Y-%m-%d') as date").
-				Where("(name LIKE ? or name LIKE ?) AND create_time >= ? AND create_time <= ?",
-					value[0],
-					value[1],
-					midnightTimestamp, endOfDayTimestamp,
-				).Order("create_time").Scan(&list).Error
-
-			if err != nil {
-				global.GVA_LOG.Error("error in query", zap.Error(err))
-			}
-			rs[strings.Title(key)] = list
-		}
-
-		return rs, nil
+		rs[strings.Title(key)] = list
 	}
-	return nil, nil
+
+	return rs, nil
+
 }
 
 // GetSummaryCrawlInfo 获取访问统计次数
@@ -138,17 +117,7 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 	TotalCount  uint64           `json:"total_count"`
 	Events      []map[string]any `json:"events"`
 }, error) {
-	s1, _ := time.Parse("2006-01-02", info.StartTime)
-	s2, _ := time.Parse("2006-01-02", info.EndTime)
-	location, _ := time.LoadLocation("Asia/Shanghai")
-	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
-	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
-
-	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
-		zap.String("end", fmt.Sprintf("%s", endOfDay)))
-
-	midnightTimestamp := midnight.Unix()
-	endOfDayTimestamp := endOfDay.Unix()
+	midnightTimestamp, endOfDayTimestamp := info.GetTimeStamps()
 
 	var rs struct {
 		CrawlCount  uint64           `json:"crawl_count"`
@@ -197,19 +166,8 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 
 // GetCleanReportsList 获取清洗列表
 func (tblCrawlStatsService *TblCrawlStatsService) GetCleanReportsList(info pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery) (map[string][]map[string]any, error) {
-	s1, _ := time.Parse("2006-01-02", info.StartTime)
-	s2, _ := time.Parse("2006-01-02", info.EndTime)
-	location, _ := time.LoadLocation("Asia/Shanghai")
-	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
-	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
-
-	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
-		zap.String("end", fmt.Sprintf("%s", endOfDay)))
-
-	midnightTimestamp := midnight.Unix()
-	endOfDayTimestamp := endOfDay.Unix()
+	midnightTimestamp, endOfDayTimestamp := info.GetTimeStamps()
 	conditions := map[string]uint8{"TikTok": 1, "Youtube": 2, "Instagram": 3}
-
 	var rs = map[string][]map[string]any{}
 	for k, v := range conditions {
 		var list []map[string]any
@@ -233,17 +191,7 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 	Count int    `json:"count"`
 	Date  string `json:"date"`
 }, error) {
-	s1, _ := time.Parse("2006-01-02", info.StartTime)
-	s2, _ := time.Parse("2006-01-02", info.EndTime)
-	location, _ := time.LoadLocation("Asia/Shanghai")
-	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
-	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
-
-	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
-		zap.String("end", fmt.Sprintf("%s", endOfDay)))
-
-	midnightTimestamp := midnight.Unix()
-	endOfDayTimestamp := endOfDay.Unix()
+	midnightTimestamp, endOfDayTimestamp := info.GetTimeStamps()
 	conditions := map[string]string{"TikTok": "total-resource-tiktok", "Youtube": "total-resource-ytb", "Instagram": "total-resource-ins"}
 	var rs = make(map[string][]struct {
 		Count int    `json:"count"`
@@ -284,43 +232,118 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 	return rs, nil
 }
 
-//// GetCrawlStatsPieData 获取饼图数据
-//func (tblCrawlStatsService *TblCrawlStatsService) GetCrawlStatsPieData(query pkgCrawlReportsReq.TblCrawlStatsPieDataQuery) {
-//	s1, _ := time.Parse("2006-01-02", query.StartTime)
-//	s2, _ := time.Parse("2006-01-02", query.EndTime)
-//	location, _ := time.LoadLocation("Asia/Shanghai")
-//	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
-//	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
-//
-//	global.GVA_LOG.Info("query time", zap.String("start", fmt.Sprintf("%s", midnight)),
-//		zap.String("end", fmt.Sprintf("%s", endOfDay)))
-//	//1 tt, 2 ytb 3 ins
-//	midnightTimestamp := midnight.Unix()
-//	endOfDayTimestamp := endOfDay.Unix()
-//	var rs = make(map[string][]map[string]any)
-//	switch query.Report {
-//	case 0:
-//		var platform []map[string]any
-//		if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_kol_resource").
-//			Select("platform, count(*) as count").
-//			Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).
-//			Group("platform").Scan(&platform).Error; err != nil {
-//			global.GVA_LOG.Error("error in query", zap.Error(err))
-//		} else {
-//			rs["platform"] = platform
-//		}
-//	case 1:
-//
-//	case 2:
-//
-//	case 3:
-//
-//	}
-//	if query.Report == 0 {
-//		if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_kol_resource").Select().
-//			Where().
-//			Group().Scan().Error; err != nil {
-//
-//		}
-//	}
-//}
+// GetCrawlStatsPieData 获取饼图数据
+func (tblCrawlStatsService *TblCrawlStatsService) GetCrawlStatsPieData(query pkgCrawlReportsReq.TblCrawlStatsPieDataQuery) (
+	platform []*struct {
+		Platform byte `json:"platform"`
+		Count    int  `json:"count"`
+	}, category []*struct {
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	}, country []*struct {
+		CountryName string `json:"country_name"`
+		CountryCode int    `json:"country_code"`
+		Count       int    `json:"count"`
+	}) {
+
+	stTime, edTime := query.GetTimeStamps()
+
+	platform = make([]*struct {
+		Platform byte `json:"platform"`
+		Count    int  `json:"count"`
+	}, 0)
+	category = make([]*struct {
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	}, 0)
+	country = make([]*struct {
+		CountryName string `json:"country_name"`
+		CountryCode int    `json:"country_code"`
+		Count       int    `json:"count"`
+	}, 0)
+
+	mediamzDb := global.MustGetGlobalDBByDBName("mediamz").Session(&gorm.Session{})
+
+	categorySql := func(stTime, edTime int64, timeName, tableName string, limit int) string {
+		return mediamzDb.ToSQL(func(tx *gorm.DB) *gorm.DB {
+			return tx.Raw(
+				fmt.Sprintf(
+					`select r.name, COUNT(*) as count from %s t left join tbl_category r on t.category_id = r.id 
+                	 where t.%s >= @st_time and t.%s <= @ed_time group by t.category_id order by count desc limit @limit`,
+					tableName, timeName, timeName),
+				sql.Named("st_time", stTime), sql.Named("ed_time", edTime), sql.Named("limit", limit),
+			)
+		})
+	}
+	countrySql := func(stTime, edTime int64, timeName, tableName, groupField string) string {
+		return mediamzDb.ToSQL(func(tx *gorm.DB) *gorm.DB {
+			return tx.Raw(
+				fmt.Sprintf(
+					`select t.%s As country_code, r.country_name, COUNT(*) as count from %s t left join tbl_country_geo r on t.%s = r.country_code 
+					where t.%s >= ? and t.%s <= ? group by t.%s, r.country_name order by count`,
+					groupField, tableName, groupField, timeName, timeName, groupField,
+				), stTime, edTime)
+		})
+	}
+
+	platformSql := func(stTime, edTime int64, timeName, tableName string) string {
+		return mediamzDb.ToSQL(func(tx *gorm.DB) *gorm.DB {
+			return tx.Raw(
+				fmt.Sprintf(
+					`select t.platform, COUNT(*) as count from %s t
+					where t.%s >= @st_time and t.%s <= @ed_time group by t.platform`,
+					tableName, timeName, timeName,
+				),
+				sql.Named("st_time", stTime), sql.Named("ed_time", edTime))
+		})
+	}
+	tableName, categoryTimeName, platformTimeName, countryTimeName, groupField := "", "", "", "", ""
+	limit := 10
+	switch query.Report {
+	case 0, 1:
+		tableName = "tbl_kol_resource"
+		groupField = "region_code"
+		categoryTimeName = "create_time"
+		countryTimeName = "create_time"
+		platformTimeName = "create_time"
+	case 2:
+		tableName = "tbl_kol_resource_clean"
+		groupField = "region_code"
+		categoryTimeName = "create_time"
+		countryTimeName = "create_time"
+		platformTimeName = "create_time"
+	case 3:
+		tableName = "tbl_marketing_total_resource"
+		groupField = "country_code"
+		categoryTimeName = "last_crawler_time"
+		countryTimeName = "last_crawler_time"
+		platformTimeName = "last_crawler_time"
+	}
+	mediamzDb.Raw(countrySql(stTime, edTime, countryTimeName, tableName, groupField)).Scan(&country)
+	mediamzDb.Raw(platformSql(stTime, edTime, platformTimeName, tableName)).Scan(&platform)
+	mediamzDb.Raw(categorySql(stTime, edTime, categoryTimeName, tableName, limit)).Scan(&category)
+
+	// 处理重复的类目数据
+	categories := make([]*struct {
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	}, 0)
+	ms := map[string]*struct {
+		Name  string `json:"name"`
+		Count int    `json:"count"`
+	}{}
+	categoriesMap := map[string]int{}
+
+	for index, category := range category {
+		if _, ok := ms[category.Name]; !ok {
+			ms[category.Name] = category
+			categoriesMap[category.Name] = index
+			categories = append(categories, category)
+		} else {
+			lookupIndex := categoriesMap[category.Name]
+			categories[lookupIndex].Count += category.Count
+		}
+	}
+	category = categories
+	return platform, category, country
+}
