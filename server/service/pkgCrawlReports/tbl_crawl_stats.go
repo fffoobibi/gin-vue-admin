@@ -326,9 +326,10 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetCrawlStatsPieData(query pkg
 		countryTimeName = "last_crawler_time"
 		platformTimeName = "last_crawler_time"
 	}
-	mediamzDb.Raw(countrySql(stTime, edTime, countryTimeName, tableName, groupField)).Scan(&country)
-	mediamzDb.Raw(platformSql(stTime, edTime, platformTimeName, tableName)).Scan(&platform)
-	mediamzDb.Raw(categorySql(stTime, edTime, categoryTimeName, tableName, limit)).Scan(&category)
+
+	mediamzDb.Raw(countrySql(stTime, edTime, countryTimeName, tableName, groupField)).Debug().Scan(&country)
+	mediamzDb.Raw(platformSql(stTime, edTime, platformTimeName, tableName)).Debug().Scan(&platform)
+	mediamzDb.Raw(categorySql(stTime, edTime, categoryTimeName, tableName, limit)).Debug().Scan(&category)
 
 	// 处理重复的类目数据
 	categories := make([]*struct {

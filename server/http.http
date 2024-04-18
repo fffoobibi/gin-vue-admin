@@ -12,7 +12,7 @@ X-Token: {{user-token}}
 >>! 123.json
 
 ### 获取国家，类目，平台 饼图
-GET {{url}}/tblCrawlStats/getCrawlStatsPieData?st_time=2024-03-19&ed_time=2024-04-18&report=3
+GET {{url}}/tblCrawlStats/getCrawlStatsPieData?st_time=2024-01-01&ed_time=2024-04-18&report=0
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}

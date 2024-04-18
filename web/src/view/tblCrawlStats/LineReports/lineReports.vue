@@ -378,12 +378,11 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
               fontWeight: 'bold',
               fontSize: 14,
               overflow: 'breakAll',
-              // position: 'left',
               formatter: function (params) {
-                return  params.percent.toFixed(2) + '%';
+                return  params.percent.toFixed(2) + '%'
               }
               // formatter: function (params) {
-              //   return params.name + " " + params.percent.toFixed(2) + '%';
+              //   return params.name + " " + params.percent.toFixed(2) + '%'
               // }
             },
           }
@@ -454,6 +453,8 @@ const disPlayPieChart = async () => {
     // if (props.report === 0) {
     // 初次访问次数
     const resp = await getCrawlStatsPieData({ st_time: props.startTime, ed_time: props.endTime, report: props.report })
+    console.log("resp --> ", resp)
+
     const sliceCountry = resp.data.country?.slice(0, 9) ?? []
     const other = (resp.data.country ?? []).slice(9).reduce((x, y) => x.count + y.count, 0)
     sliceCountry.push({ country_name: '其他', count: other })
@@ -473,6 +474,8 @@ const disPlayPieChart = async () => {
       return { name: name, value: v.count }
     })
     pieData.platform = platform
+
+    console.log('pie data ====>', platform)
 
     const categoris = []
     const categoryData = []
