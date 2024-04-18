@@ -40,7 +40,7 @@
 </template>
 <script setup>
 import * as echarts from 'echarts'
-import { nextTick, onMounted, onUnmounted, ref, watch, toRefs } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch, toRefs, reactive, computed } from 'vue'
 import { useWindowResize } from '@/hooks/use-windows-resize'
 import { getFirstCrawlInfo, getCrawlStatsPieData, getCleanList, getTotalResourceReportsList } from '@/api/tblCrawlStats'
 import { getKolCrawlInfo } from "@/api/tblKolResource"
@@ -111,10 +111,15 @@ const { startTime, endTime, report, group, lineTitle } = toRefs(props)
 const loading = ref(true)
 
 watch([startTime, endTime, group, report], async (newVal, oldVal) => {
-  chart.showLoading({ text: '' })
-  await displayLineReports()
-  await disPlayPieChart()
-  chart.hideLoading()
+  try {
+    chart.showLoading({ text: '' })
+    await displayLineReports()
+    await disPlayPieChart()
+  } catch (error) {
+
+  } finally {
+    chart.hideLoading()
+  }
 }, { immediate: false })
 
 useWindowResize(() => {
@@ -149,7 +154,11 @@ const renderLineChart = (legendData, xdata, ydata) => {
       type: 'value'
     },
     tooltip: {
-      show: true
+      showL: true,
+      trigger: 'axis',
+      axisPointer: {
+        type: 'line' // 设置为 'cross' 类型以显示悬浮的竖线
+      }
     },
     dataZoom: dataZoom(),
     series: ydata,
@@ -204,7 +213,20 @@ async function displayLineReports() {
       let keys
       legendData.forEach(element => {
         const [d, k] = fillData(resp.data[element] ?? [], props.startTime, props.endTime, props.group)
-        data.push({ name: element, type: 'line', smooth: true, data: d })
+        data.push({
+          name: element,
+          type: 'line',
+          smooth: true,
+          data: d,
+          label: {
+            show: true,
+            color: 'inherit',
+            backgroundColor: 'transparent',
+            formatter: (params) => {
+              return formatNumber(params.value)
+            }
+          }
+        })
         keys = k
       })
       renderLineChart(legendData, keys, data)
@@ -254,6 +276,20 @@ let chart4 = null
 const pie1 = ref(null)
 const pie2 = ref(null)
 const pie3 = ref(null)
+const pieData = reactive({
+  platform: [],
+  country: [],
+  category: []
+})
+const platformCount = (type) => {
+  let value
+  pieData.platform.forEach(v => {
+    if (v.name == type) {
+      value = v.value
+    }
+  })
+  return value
+}
 
 
 const renderPieCharts = (countryData, platformData, categories, categoryData, reportType = 0) => {
@@ -278,6 +314,7 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
         },
         series: [
           {
+            alignTo: 'edge',
             type: 'pie',
             data: countryData,
             radius: ['40%', '70%'],
@@ -317,17 +354,37 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
             fontWeight: 'bold'
           }
         },
+        legend: {
+          show: true,
+          orient: 'vertical',
+          right: '0%',
+          formatter: function (name) {
+            return name + "\n" + platformCount(name)
+          },
+          // textStyle: {
+          //   fontWeight: "bold"
+          // }
+        },
         series: [
           {
+            alignTo: 'edge',
             type: 'pie',
             data: platformData,
+            labelLine: {
+              show: true,
+            },
             label: {
               show: true,
               fontWeight: 'bold',
               fontSize: 14,
+              overflow: 'breakAll',
+              // position: 'left',
               formatter: function (params) {
-                return params.name + " \n" + params.percent.toFixed(2) + '%';
+                return  params.percent.toFixed(2) + '%';
               }
+              // formatter: function (params) {
+              //   return params.name + " " + params.percent.toFixed(2) + '%';
+              // }
             },
           }
         ]
@@ -382,6 +439,9 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
           {
             data: categoryData,  // [120, 200, 150, 80, 70, 110, 130],
             type: 'bar',
+            label: {
+              show: true
+            }
           }
         ]
       })
@@ -399,6 +459,8 @@ const disPlayPieChart = async () => {
     sliceCountry.push({ country_name: '其他', count: other })
 
     const country = sliceCountry.map(v => ({ name: v.country_name, value: v.count }))
+    pieData.country = country
+
     const platform = (resp.data.platform ?? []).map(v => {
       let name
       if (v.platform == 1) {
@@ -410,13 +472,18 @@ const disPlayPieChart = async () => {
       }
       return { name: name, value: v.count }
     })
+    pieData.platform = platform
+
     const categoris = []
     const categoryData = []
     const cs = resp.data.category ?? []
-    cs.slice(0, 7).sort((a, b) => b.count - a.count).forEach(v => {
-      categoris.push(v.name)
+
+    pieData.category = cs.slice(0, 7).sort((a, b) => b.count - a.count)
+    pieData.category.forEach(v => {
+      categoris.push(v.name || "未处理")
       categoryData.push(v.count)
     })
+
     renderPieCharts(country, platform, categoris, categoryData)
     // }
   }

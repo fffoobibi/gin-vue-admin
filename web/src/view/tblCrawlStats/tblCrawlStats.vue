@@ -644,7 +644,7 @@ const shortcuts = [
 
 .data-tab ul .active {
   background: url(@/assets/tab-bg2.png) right 0px no-repeat;
-  color: #215883;
+  color: #ff5900;
 }
 
 .data-tab ul p {

@@ -7,6 +7,9 @@ module.exports = {
   important: true,
   theme: {
     extend: {
+      borderRadius: {
+        "10": "10px"
+      },
       backgroundColor: {
         "main": "#F5F5F5",
       }

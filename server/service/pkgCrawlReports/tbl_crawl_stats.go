@@ -110,30 +110,30 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetFirstCrawlCount(info pkgCra
 
 // GetSummaryCrawlInfo 获取访问统计次数
 func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCrawlReportsReq.TblCrawlStatsTimeSearchQuery) (struct {
-	CrawlCount  uint64           `json:"crawl_count"`
-	ValidCount  uint64           `json:"valid_count"`
-	CleanCount  uint64           `json:"clean_count"`
-	UpdateCount uint64           `json:"update_count"`
-	TotalCount  uint64           `json:"total_count"`
-	Events      []map[string]any `json:"events"`
+	CrawlCount  int              `json:"crawl_count"`
+	ValidCount  int              `json:"valid_count"`
+	CleanCount  int              `json:"clean_count"`
+	UpdateCount int              `json:"update_count"`
+	TotalCount  int              `json:"total_count"`
+	Events      []map[string]any `json:"events" gorm:"-"`
 }, error) {
 	midnightTimestamp, endOfDayTimestamp := info.GetTimeStamps()
 
 	var rs struct {
-		CrawlCount  uint64           `json:"crawl_count"`
-		ValidCount  uint64           `json:"valid_count"`
-		CleanCount  uint64           `json:"clean_count"`
-		UpdateCount uint64           `json:"update_count"`
-		TotalCount  uint64           `json:"total_count"`
-		Events      []map[string]any `json:"events"`
+		CrawlCount  int              `json:"crawl_count"`
+		ValidCount  int              `json:"valid_count"`
+		CleanCount  int              `json:"clean_count"`
+		UpdateCount int              `json:"update_count"`
+		TotalCount  int              `json:"total_count"`
+		Events      []map[string]any `json:"events" gorm:"-"`
 	}
-
 	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).Debug().
 		Select("SUM(count) as `crawl_count`").
 		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).
 		Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query crawl count", zap.Error(err))
 	}
+
 	if err := global.GetGlobalDBByDBName("mediamz").Model(&pkgCrawlReports.TblKolResource{}).Debug().
 		Select("COUNT(*) as valid_count").
 		Where("create_time >= ? AND create_time <= ?", midnightTimestamp, endOfDayTimestamp).Scan(&rs).Error; err != nil {
@@ -148,7 +148,8 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetSummaryCrawlInfo(info pkgCr
 
 	if err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).Debug().
 		Select("SUM(count) as update_count").
-		Where("create_time >= ? AND create_time <= ? AND (name LIKE ? or name LIKE ? or name Like ?)", midnightTimestamp, endOfDayTimestamp, "%total-resource-tiktok%", "%total-resource-ytb%", "%total-resource-ins%").Scan(&rs).Error; err != nil {
+		Where("create_time >= ? AND create_time <= ? AND (name LIKE ? or name LIKE ? or name Like ?)",
+			midnightTimestamp, endOfDayTimestamp, "%total-resource-tiktok%", "%total-resource-ytb%", "%total-resource-ins%").Scan(&rs).Error; err != nil {
 		global.GVA_LOG.Error("error in query update count", zap.Error(err))
 	}
 
@@ -198,9 +199,16 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 		Date  string `json:"date"`
 	})
 	var waiter sync.WaitGroup
-	waiter.Add(3)
+	waiter.Add(len(conditions))
 	for k, v := range conditions {
 		go func(field, c string) {
+			defer func() {
+				if r := recover(); r != nil {
+					// 处理 panic，例如打印错误日志等
+					global.GVA_LOG.Error("panic in GetTotalResourceReportsList", zap.Any("error", r))
+				}
+				waiter.Done()
+			}()
 			if rows, err := global.GVA_DB.Model(&pkgCrawlReports.TblCrawlStats{}).Debug().
 				Select("FROM_UNIXTIME(create_time, '%Y-%m-%d') as date, SUM(count) AS count").
 				Where("create_time >= ? AND create_time <= ? AND name = ?",
@@ -225,7 +233,6 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 				}
 				rs[field] = list
 			}
-			waiter.Done()
 		}(k, v)
 	}
 	waiter.Wait()
