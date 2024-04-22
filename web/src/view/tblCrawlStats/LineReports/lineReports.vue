@@ -130,20 +130,11 @@ useWindowResize(() => {
   chart.resize()
 })
 
-const _renderLineData = reactive({ value: null, xdata: null })
-
-const totalLineData = computed(() => {
-
-})
 
 const renderLineChart = (legendData, xdata, ydata) => {
   if (!chart) {
     chart = echarts.init(line.value)
   }
-  _renderLineData.value = ydata
-  console.log('ydata ===> ', ydata)
-  console.log('legendData ===> ', legendData)
-  console.log('xdata ===> ', xdata)
   legendData = ['总计', ...legendData]
 
   const total = {
@@ -160,7 +151,7 @@ const renderLineChart = (legendData, xdata, ydata) => {
   const tValue = new Array(ydata[0].data.length).fill(0)
   ydata.forEach((v) => {
     v.data.forEach((vv, i) => {
-      tValue[i] += vv[i]
+      tValue[i] += vv
     })
   })
   total.data = tValue
@@ -518,15 +509,13 @@ const disPlayPieChart = async () => {
     })
     pieData.platform = platform
 
-    console.log('pie data ====>', platform)
-
     const categoris = []
     const categoryData = []
     const cs = resp.data.category ?? []
 
     pieData.category = cs.slice(0, 7).sort((a, b) => b.count - a.count)
     pieData.category.forEach(v => {
-      categoris.push(v.name || "未处理")
+      categoris.push(v.name || "待分类")
       categoryData.push(v.count)
     })
 

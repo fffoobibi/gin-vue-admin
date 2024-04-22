@@ -190,10 +190,10 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceInfo(c *gin.Context) {
 	db := global.GetGlobalDBByDBName("mediamz").Table("tbl_marketing_total_resource").Session(&gorm.Session{})
 	for k, v := range conditions {
 		go func(f, c string) {
+			defer wait.Done()
 			if err := db.Select("COUNT(*) as " + f).Where(c).Scan(&rs).Error; err != nil {
 				global.GVA_LOG.Error("error in query", zap.Error(err))
 			}
-			wait.Done()
 		}(k, v[0])
 	}
 	wait.Wait()
