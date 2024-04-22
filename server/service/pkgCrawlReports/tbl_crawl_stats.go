@@ -170,9 +170,10 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetCleanReportsList(info pkgCr
 	midnightTimestamp, endOfDayTimestamp := info.GetTimeStamps()
 	conditions := map[string]uint8{"TikTok": 1, "Youtube": 2, "Instagram": 3}
 	var rs = map[string][]map[string]any{}
+	db := global.GetGlobalDBByDBName("mediamz").Table("tbl_kol_resource_clean").Session(&gorm.Session{})
 	for k, v := range conditions {
 		var list []map[string]any
-		if err := global.GetGlobalDBByDBName("mediamz").Table("tbl_kol_resource_clean").
+		if err := db.
 			Select("FROM_UNIXTIME(update_time, '%Y-%m-%d') as date, COUNT(*) AS count").
 			Where("update_time >= ? AND update_time <= ? AND platform = ?",
 				midnightTimestamp, endOfDayTimestamp, v,

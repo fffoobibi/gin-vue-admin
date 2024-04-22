@@ -31,7 +31,7 @@ X-User-Id: {{user-id}}
 X-Token: {{user-token}}
 
 ### 获取清洗报表
-GET http://127.0.0.1:8888/tblCrawlStats/getCleanList?st_time=2024-01-01&ed_time=2024-04-11
+GET http://36.32.174.26:5005/tblCrawlStats/getCleanList?st_time=2024-01-01&ed_time=2024-04-11
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}
@@ -43,7 +43,7 @@ X-User-Id: {{user-id}}
 X-Token: {{user-token}}
 
 ### 获取大事记
-GET http://127.0.0.1:8888/e/getTblCrawlEventsList?st_time=2024-01-01&ed_time=2024-04-11&page=1&pageSize=3
+GET http://127.0.0.1:8888/e/getTblCrawlEventsList?st_time=2024-01-01&ed_time=2024-04-11&page=1&pageSize=2
 Accept: application/json
 X-User-Id: {{user-id}}
 X-Token: {{user-token}}

@@ -10,7 +10,7 @@
                 <svg-icon name="icon-data" color="red" style="width:16px;height:16px" />
                 当前在库数量
                 <el-tooltip effect="dark" content="总资源库当前在库数量" placement="top">
-                  <svg-icon name="icon-tips" color="red" style="width:16px;height:16px" />
+                  <svg-icon name="icon-tips" color="lightgray" style="width:16px;height:16px" />
                 </el-tooltip>
               </p>
             </el-row>
@@ -97,24 +97,32 @@
           <div class="data-tab">
             <ul class="list-inline">
               <li :class="ac0" @click="clickReportsTab(0)">
-                <p>首次抓取次数</p>
+                <p>首次抓取次数 <el-tooltip effect="dark" content="抓取次数指访问社媒平台的次数" placement="top">
+                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
+                  </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
               </li>
               <li :class="ac1" @click="clickReportsTab(1)">
-                <p>有效资源数</p>
+                <p>有效资源数 <el-tooltip effect="dark" content="指红人链接去重后的数量" placement="top">
+                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
+                  </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.validCount) }}</span>
               </li>
               <li :class="ac2" @click="clickReportsTab(2)">
-                <p>数据清洗</p>
+                <p>数据清洗 <el-tooltip effect="dark" content="指采集到的红人根据一定条件筛选后的数据量" placement="top">
+                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
+                  </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
               </li>
               <li :class="ac3" @click="clickReportsTab(3)">
-                <p>总资源库更新</p>
+                <p>总资源库更新 <el-tooltip effect="dark" content="指总资源库红人更新的数据量" placement="top">
+                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
+                  </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
               </li>
             </ul>
           </div>
-          <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p>
+          <!-- <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p> -->
           <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current"
             :line-title="lineTitle" />
         </div>
@@ -153,6 +161,7 @@ const st_time = ref(formatTimeToStr(dft_start, 'yyyy-MM-dd'))
 const ed_time = ref(formatTimeToStr(dft_end, 'yyyy-MM-dd'))
 const timeValue = ref([formatTimeToStr(dft_start), formatTimeToStr(dft_end)])
 const report = ref(0)
+const tipColor = ref('#1970C8')
 
 watch([st_time, ed_time], () => {
   disPlaySummaryInfo(st_time.value, ed_time.value)

@@ -72,6 +72,7 @@ const props = defineProps({
   }
 })
 
+
 const dataZoom = () => {
   let startDate = new Date(props.startTime)
   let endDate = new Date(props.endTime)
@@ -129,10 +130,41 @@ useWindowResize(() => {
   chart.resize()
 })
 
+const _renderLineData = reactive({ value: null, xdata: null })
+
+const totalLineData = computed(() => {
+
+})
+
 const renderLineChart = (legendData, xdata, ydata) => {
   if (!chart) {
     chart = echarts.init(line.value)
   }
+  _renderLineData.value = ydata
+  console.log('ydata ===> ', ydata)
+  console.log('legendData ===> ', legendData)
+  console.log('xdata ===> ', xdata)
+  legendData = ['总计', ...legendData]
+
+  const total = {
+    name: '总计', type: 'line', smooth: true, data: null,
+    label: {
+      show: true,
+      color: 'inherit',
+      backgroundColor: 'transparent',
+      formatter: (params) => {
+        return formatNumber(params.value)
+      }
+    }
+  }
+  const tValue = new Array(ydata[0].data.length).fill(0)
+  ydata.forEach((v) => {
+    v.data.forEach((vv, i) => {
+      tValue[i] += vv[i]
+    })
+  })
+  total.data = tValue
+
   chart.setOption({
     title: {
       text: lineTitle?.value,
@@ -161,7 +193,7 @@ const renderLineChart = (legendData, xdata, ydata) => {
       }
     },
     dataZoom: dataZoom(),
-    series: ydata,
+    series: [total, ...ydata],
   })
 }
 
@@ -356,10 +388,15 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
         },
         legend: {
           show: true,
-          orient: 'vertical',
-          right: '0%',
+          // orient: 'vertical',
+          // right: '0%',
+          bottom: '0%',
           formatter: function (name) {
-            return name + "\n" + platformCount(name)
+            let n
+            if (name == 'TikTok') n = 'TT'
+            else if (name == 'Youtube') n = 'YTB'
+            else if (name == 'Instagram') n = 'INS'
+            return n + " " + formatNumber(platformCount(name))
           },
           // textStyle: {
           //   fontWeight: "bold"
@@ -370,16 +407,19 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
             alignTo: 'edge',
             type: 'pie',
             data: platformData,
+            // radius: [0, '70%'],
+            height: 164,
             labelLine: {
               show: true,
             },
             label: {
               show: true,
               fontWeight: 'bold',
-              fontSize: 14,
+              fontSize: 12,
+              align: 'left',
               overflow: 'breakAll',
               formatter: function (params) {
-                return  params.percent.toFixed(2) + '%'
+                return params.percent.toFixed(2) + '%'
               }
               // formatter: function (params) {
               //   return params.name + " " + params.percent.toFixed(2) + '%'
@@ -439,7 +479,10 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
             data: categoryData,  // [120, 200, 150, 80, 70, 110, 130],
             type: 'bar',
             label: {
-              show: true
+              show: true,
+              formatter: (params) => {
+                return formatNumber(params.value)
+              }
             }
           }
         ]
@@ -535,6 +578,7 @@ onUnmounted(() => {
   background-color: #fff;
   height: 380px;
   width: 100%;
+  margin-top: 5px;
 }
 
 .card-pie {
