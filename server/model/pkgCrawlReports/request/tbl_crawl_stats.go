@@ -35,3 +35,18 @@ func (c TblCrawlStatsTimeSearchQuery) GetTimeStamps() (int64, int64) {
 	endOfDay := time.Date(s2.Year(), s2.Month(), s2.Day(), 23, 59, 59, 0, location)
 	return midnight.Unix(), endOfDay.Unix()
 }
+
+type TblCrawlStatsFirstCount struct {
+	Tiktok int    `json:"tiktok" form:"tiktok"`
+	Ins    int    `json:"ins" form:"ins"`
+	Ytb    int    `json:"ytb" form:"ytb"`
+	Date   string `json:"date" binding:"required"`
+}
+
+func (t TblCrawlStatsFirstCount) DateTimeStamp() *int {
+	s1, _ := time.Parse("2006-01-02", t.Date)
+	location, _ := time.LoadLocation("Asia/Shanghai")
+	midnight := time.Date(s1.Year(), s1.Month(), s1.Day(), 0, 0, 0, 0, location)
+	rs := int(midnight.Unix())
+	return &rs
+}

@@ -80,6 +80,7 @@
 
           <el-col :span="3" :push="12">
             <div class="week">
+              <el-button v-auth="btnAuth.addFirstCount" @click="countForm.visable = true">添加</el-button>
               <span :class="group.g0" @click="handleGroup(0)">日</span>
               <span :class="group.g1" @click="handleGroup(1)">周</span>
               <span :class="group.g2" @click="handleGroup(2)">月</span>
@@ -97,25 +98,26 @@
           <div class="data-tab">
             <ul class="list-inline">
               <li :class="ac0" @click="clickReportsTab(0)">
-                <p>首次抓取次数 <el-tooltip effect="dark" content="抓取次数指访问社媒平台的次数" placement="top">
+                <p>盲抓次数 <el-tooltip effect="dark" content="指爬虫访问社媒平台的次数, 用来抓取红人链接" placement="top">
                     <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
                   </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
               </li>
               <li :class="ac1" @click="clickReportsTab(1)">
-                <p>有效资源数 <el-tooltip effect="dark" content="指红人链接去重后的数量" placement="top">
+                <p>初步有效资源数 <el-tooltip effect="dark" content="指经过爬虫盲抓, 红人链接去重后的数量, 该阶段需要爬虫更新红人详细数据" placement="top">
                     <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
                   </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.validCount) }}</span>
               </li>
               <li :class="ac2" @click="clickReportsTab(2)">
-                <p>数据清洗 <el-tooltip effect="dark" content="指采集到的红人根据一定条件筛选后的数据量" placement="top">
+                <p>数据清洗 <el-tooltip effect="dark"
+                    content="将初步有效资源数, 根据一定的条件(红人粉丝量，播放数，视频量，最近更新时间等)筛选得到的数据, 该阶段需要GPT识别红人类目" placement="top">
                     <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
                   </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
               </li>
               <li :class="ac3" @click="clickReportsTab(3)">
-                <p>总资源库更新 <el-tooltip effect="dark" content="指总资源库红人更新的数据量" placement="top">
+                <p>总资源库更新 <el-tooltip effect="dark" content="指总资源库红人更新的数据量，更新周期每月1次" placement="top">
                     <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
                   </el-tooltip></p>
                 <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
@@ -130,12 +132,36 @@
 
     </el-row>
 
+    <el-dialog v-model="countForm.visable" title="盲抓次数" width="500" :before-close="handleClose" destroy-on-close>
+      <el-form :model="countForm" label-width="auto" ref="formRef">
+        <el-form-item label="日期" prop="date" :rules="{ required: true, message: '请选择日期' }">
+          <el-date-picker v-model="countForm.date" type="date" value-format="YYYY-MM-DD"></el-date-picker>
+        </el-form-item>
+        <el-form-item label="YTB" prop="ytb">
+          <el-input-number v-model="countForm.ytb" :step="2000" :min="0"></el-input-number>
+        </el-form-item>
+        <el-form-item label="TT" prop="tiktok">
+          <el-input-number v-model="countForm.tiktok" :step="2000" :min="0"></el-input-number>
+        </el-form-item>
+        <el-form-item label="INS" prop="ins">
+          <el-input-number v-model="countForm.ins" :step="2000" :min="0"></el-input-number>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="countForm.visable = false">取消</el-button>
+          <el-button :loading="countForm.loading" type="primary" @click="submitCount(formRef)">
+            确认
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 
-// 全量引入格式化工具 请按需保留
 import { reactive, ref, onMounted, nextTick, computed, watch } from 'vue'
 import { useRouter } from "vue-router"
 import { formatTimeToStr } from '@/utils/date'
@@ -143,11 +169,15 @@ import { getTotalResourceInfo, getSummaryCrawlInfo } from '@/api/tblCrawlStats'
 import * as echarts from 'echarts'
 import LineReports from '@/view/tblCrawlStats/LineReports/lineReports.vue'
 import { formatNumber } from '@/utils/reports'
+import { useBtnAuth } from '@/utils/btnAuth'
+import { addFirstCount } from '@/api/tblCrawlStats'
+import { ElMessage } from 'element-plus'
 
 defineOptions({
   name: 'TblCrawlStats'
 })
 
+const btnAuth = useBtnAuth()
 const router = useRouter()
 const dft_end = new Date()
 const dft_start = new Date()
@@ -178,9 +208,9 @@ const lineTitle = computed(() => {
   const daysDifference = Math.ceil(timeDifference / (1000 * 60 * 60 * 24))
   let msg
   if (report.value === 0) {
-    msg = " 首次抓取次数 "
+    msg = " 盲抓次数 "
   } else if (report.value === 1) {
-    msg = " 有效资源数 "
+    msg = " 初步有效资源数 "
   } else if (report.value === 2) {
     msg = " 数据清洗 "
   } else if (report.value === 3) {
@@ -190,6 +220,39 @@ const lineTitle = computed(() => {
   }
   return `${daysDifference}天的${msg}统计数据`
 })
+
+const formRef = ref(null)
+const countForm = reactive({
+  date: "",
+  ins: 0,
+  tiktok: 0,
+  ytb: 0,
+  loading: false,
+  visable: false
+})
+
+const handleClose = (done) => {
+  formRef.value.resetFields()
+  countForm.date = ""
+  console.log('handle close');
+  done()
+}
+
+const submitCount = (form) => {
+  if (!form) return
+  countForm.loading = true
+  form.validate(async valid => {
+    if (!valid) {
+      countForm.loading = false
+    } else {
+      const resp = await addFirstCount({ date: countForm.date, ins: countForm.ins, tiktok: countForm.tiktok, ytb: countForm.ytb })
+      countForm.loading = false
+      countForm.visable = false
+      formRef.value.resetFields()
+      ElMessage.success({ message: "已添加", plain: true })
+    }
+  })
+}
 
 const reportTip = computed(() => {
   disPlaySummaryInfo(st_time.value, ed_time.value)

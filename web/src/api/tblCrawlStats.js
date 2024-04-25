@@ -184,3 +184,17 @@ export const getTotalResourceReportsList = (params) => {
     params,
   });
 };
+
+// @Tags TblCrawlStats
+// @Summary 增加更新次数
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Router /tblCrawlStats/addFirstCount [post]
+export const addFirstCount = (data) => {
+  return service({
+    url: "/tblCrawlStats/addFirstCount",
+    method: "post",
+    data,
+  });
+};

@@ -200,6 +200,7 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 		Date  string `json:"date"`
 	})
 	var waiter sync.WaitGroup
+	var lock sync.Mutex
 	waiter.Add(len(conditions))
 	for k, v := range conditions {
 		go func(field, c string) {
@@ -232,7 +233,9 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetTotalResourceReportsList(in
 					_ = global.GVA_DB.ScanRows(rows, &info)
 					list = append(list, info)
 				}
+				lock.Lock()
 				rs[field] = list
+				lock.Unlock()
 			}
 		}(k, v)
 	}
@@ -355,4 +358,37 @@ func (tblCrawlStatsService *TblCrawlStatsService) GetCrawlStatsPieData(query pkg
 	}
 	category = categories
 	return platform, category, country
+}
+
+func (tblCrawlStatsService *TblCrawlStatsService) AddFirstCount(data pkgCrawlReportsReq.TblCrawlStatsFirstCount) error {
+	names := map[string]int{
+		"mock-tiktok-first-crawl":    data.Tiktok,
+		"mock-youtube-first-crawl":   data.Ytb,
+		"mock-instagram-first-crawl": data.Ins,
+	}
+	db := global.GVA_DB.Session(&gorm.Session{})
+	for name, v := range names {
+		var createTime = data.DateTimeStamp()
+		stats := pkgCrawlReports.TblCrawlStats{
+			Count:      &v,
+			CreateTime: createTime,
+			Ip:         "127.0.0.1",
+			Name:       name,
+			Project:    "mediamz_playwright",
+		}
+		var count int64
+		db.Model(&pkgCrawlReports.TblCrawlStats{}).Where("name = ? AND create_time = ?", name, &createTime).Count(&count)
+		if count == 0 {
+			if err := db.Save(&stats).Error; err != nil {
+				global.GVA_LOG.Error("save fake data failed", zap.Error(err))
+			}
+		} else {
+			if err := db.Model(&pkgCrawlReports.TblCrawlStats{}).
+				Where("name = ? AND create_time = ?", name, &createTime).
+				Update("count", gorm.Expr("count + ?", stats.Count)).Error; err != nil {
+				global.GVA_LOG.Error("update fake data failed", zap.Error(err))
+			}
+		}
+	}
+	return nil
 }

@@ -137,6 +137,15 @@ const renderLineChart = (legendData, xdata, ydata) => {
   }
   legendData = ['总计', ...legendData]
 
+  const legendSeleted = {}
+  legendData.forEach((val, index) => {
+    if (index == 0) {
+      legendSeleted[val] = true
+    } else {
+      legendSeleted[val] = false
+    }
+  })
+
   const total = {
     name: '总计', type: 'line', smooth: true, data: null,
     label: {
@@ -160,14 +169,17 @@ const renderLineChart = (legendData, xdata, ydata) => {
     title: {
       text: lineTitle?.value,
       textStyle: {
-        fontSize: 14
+        fontSize: 14,
+        color: 'red'
       },
       padding: [8, 15]
     },
     legend: {
       textStyle: { fontWeight: 'bold' },
       data: legendData,
-      y: 'top'
+      y: 'top',
+      // x: 'right',
+      selected: legendSeleted
     },
     xAxis: {
       type: 'category',

@@ -29,5 +29,6 @@ func (s *TblCrawlStatsRouter) InitTblCrawlStatsRouter(Router *gin.RouterGroup) {
 		tblCrawlStatsRouterWithoutRecord.GET("getSummaryCrawlInfo", tblCrawlStatsApi.GetSummaryCrawlInfo)                 // 获取初次，有效，清洗，更新次数统计
 		tblCrawlStatsRouterWithoutRecord.GET("getCleanList", tblCrawlStatsApi.GetCleanReportsList)                        // 获取清洗报表
 		tblCrawlStatsRouterWithoutRecord.GET("getTotalResourceReportsList", tblCrawlStatsApi.GetTotalResourceReportsList) // 获取更细报表
+		tblCrawlStatsRouterWithoutRecord.POST("addFirstCount", tblCrawlStatsApi.AddFirstCount)                            // 增加次数
 	}
 }

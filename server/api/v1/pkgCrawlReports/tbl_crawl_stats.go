@@ -260,3 +260,19 @@ func (tblCrawlStatsApi *TblCrawlStatsApi) GetTotalResourceReportsList(c *gin.Con
 		response.OkWithDetailed(list, "获取成功", c)
 	}
 }
+
+// AddFirstCount 增加盲抓次数
+func (tblCrawlStatsApi *TblCrawlStatsApi) AddFirstCount(c *gin.Context) {
+	var query pkgCrawlReportsReq.TblCrawlStatsFirstCount
+	err := c.ShouldBindJSON(&query)
+	if err != nil {
+		response.FailWithMessage(err.Error(), c)
+		return
+	}
+	if err := tblCrawlStatsService.AddFirstCount(query); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithMessage("success", c)
+	}
+}
