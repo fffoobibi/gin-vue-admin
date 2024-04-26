@@ -69,11 +69,10 @@
 
     <el-row justify="center">
       <el-card class="radius-10 report-card" body-class="no-padding">
-        <!-- <el-affix :offset="98"> -->
         <el-row justify="start" align="middle" class="padding-5 report-header" gutter="10">
           <el-col :span="4">
-            <h3>
-              <svg-icon name="icon-menu" style="width: 20px; height:20px" />
+            <h3 style="color:#fff">
+              <img src="@/assets/images/icon-menu-white.png" style="width: 11px">
               数据趋势图
             </h3>
           </el-col>
@@ -89,8 +88,8 @@
 
           <el-col :span="5" :push="12" class="flex">
             <el-date-picker v-model="timeValue" type="daterange" :shortcuts="shortcuts" range-separator="-"
-              start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default"
-              @change="dateChange" />
+              start-placeholder="开始" end-placeholder="结束" value-format="YYYY-MM-DD" size="default" @change="dateChange"
+              class="diy-time" />
           </el-col>
 
         </el-row>
@@ -98,33 +97,44 @@
           <div class="data-tab">
             <ul class="list-inline">
               <li :class="ac0" @click="clickReportsTab(0)">
-                <p>盲抓次数 <el-tooltip effect="dark" content="指爬虫访问社媒平台的次数, 用来抓取红人链接" placement="top">
-                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
-                  </el-tooltip></p>
-                <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
+                <div class="s-img v-vague"></div>
+                <div class="s-box">
+                  <p>盲抓 <el-tooltip effect="dark" content="指爬虫访问社媒平台的次数, 用来抓取红人链接" placement="top">
+                      <svg-icon name="icon-tips" :color="tipColors.t0" style="width:16px;height:16px" />
+                    </el-tooltip></p>
+                  <span>{{ formatNumber(summaryInfo.crawlCount) }}</span>
+                </div>
               </li>
               <li :class="ac1" @click="clickReportsTab(1)">
-                <p>初步有效资源数 <el-tooltip effect="dark" content="指经过爬虫盲抓, 红人链接去重后的数量, 该阶段需要爬虫更新红人详细数据" placement="top">
-                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
-                  </el-tooltip></p>
-                <span>{{ formatNumber(summaryInfo.validCount) }}</span>
+                <div class="s-img v-update"></div>
+                <div class="s-box">
+                  <p>初步更新 <el-tooltip effect="dark" content="指经过爬虫盲抓, 红人链接去重后的数量, 该阶段需要爬虫更新红人详细数据" placement="top">
+                      <svg-icon name="icon-tips" :color="tipColors.t1" style="width:16px;height:16px" />
+                    </el-tooltip></p>
+                  <span>{{ formatNumber(summaryInfo.validCount) }}</span>
+                </div>
               </li>
               <li :class="ac2" @click="clickReportsTab(2)">
-                <p>数据清洗 <el-tooltip effect="dark"
-                    content="将初步有效资源数, 根据一定的条件(红人粉丝量，播放数，视频量，最近更新时间等)筛选得到的数据, 该阶段需要GPT识别红人类目" placement="top">
-                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
-                  </el-tooltip></p>
-                <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
+                <div class="s-img v-clean"></div>
+                <div class="s-box">
+                  <p>清洗 <el-tooltip effect="dark"
+                      content="将初步有效资源数, 根据一定的条件(红人粉丝量，播放数，视频量，最近更新时间等)筛选得到的数据, 该阶段需要GPT识别红人类目" placement="top">
+                      <svg-icon name="icon-tips" :color="tipColors.t2" style="width:16px;height:16px" />
+                    </el-tooltip></p>
+                  <span>{{ formatNumber(summaryInfo.cleanCount) }}</span>
+                </div>
               </li>
               <li :class="ac3" @click="clickReportsTab(3)">
-                <p>总资源库更新 <el-tooltip effect="dark" content="指总资源库红人更新的数据量，更新周期每月1次" placement="top">
-                    <svg-icon name="icon-tips" :color="tipColor" style="width:16px;height:16px" />
-                  </el-tooltip></p>
-                <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
+                <div class="s-img v-total"></div>
+                <div class="s-box">
+                  <p>总资源更新 <el-tooltip effect="dark" content="指总资源库红人更新的数据量，更新周期每月1次" placement="top">
+                      <svg-icon name="icon-tips" :color="tipColors.t3" style="width:16px;height:16px" />
+                    </el-tooltip></p>
+                  <span>{{ formatNumber(summaryInfo.updateCount) }}</span>
+                </div>
               </li>
             </ul>
           </div>
-          <!-- <p style="color:red;margin-top: 10px; padding-left: 10px;font-size: 9pt;">{{ reportTip }}</p> -->
           <LineReports :report="report" :start-time="st_time" :end-time="ed_time" :group="group.current"
             :line-title="lineTitle" />
         </div>
@@ -183,15 +193,54 @@ const dft_end = new Date()
 const dft_start = new Date()
 dft_start.setTime(dft_start.getTime() - 3600 * 1000 * 24 * 30)
 
-const ac0 = ref('active')
-const ac1 = ref('')
-const ac2 = ref('')
-const ac3 = ref('')
+const ac0 = ref('wsmall active')
+const ac1 = ref('wsmall')
+const ac2 = ref('wsmall')
+const ac3 = ref('wsmall')
 const st_time = ref(formatTimeToStr(dft_start, 'yyyy-MM-dd'))
 const ed_time = ref(formatTimeToStr(dft_end, 'yyyy-MM-dd'))
 const timeValue = ref([formatTimeToStr(dft_start), formatTimeToStr(dft_end)])
 const report = ref(0)
-const tipColor = ref('#1970C8')
+const tipColors = reactive({
+  t0: "#8ba9c8",
+  t1: "#aad6fe",
+  t2: "#aad6fe",
+  t3: "#aad6fe"
+})
+
+const clickReportsTab = (type) => {
+  if (type === 0) {
+    ac1.value = ac2.value = ac3.value = 'wsmall'
+    ac0.value = 'wsmall active'
+    tipColors.t0 = "#8ba9c8"
+    tipColors.t1 = "#aad6fe"
+    tipColors.t2 = "#aad6fe"
+    tipColors.t3 = "#aad6fe"
+
+  } else if (type === 1) {
+    ac0.value = ac2.value = ac3.value = 'wsmall'
+    ac1.value = 'wsmall active'
+    tipColors.t0 = "#aad6fe"
+    tipColors.t1 = "#8ba9c8"
+    tipColors.t2 = "#aad6fe"
+    tipColors.t3 = "#aad6fe"
+  } else if (type === 2) {
+    ac0.value = ac1.value = ac3.value = 'wsmall'
+    ac2.value = 'wsmall active'
+    tipColors.t0 = "#aad6fe"
+    tipColors.t1 = "#aad6fe"
+    tipColors.t2 = "#8ba9c8"
+    tipColors.t3 = "#aad6fe"
+  } else if (type === 3) {
+    ac0.value = ac1.value = ac2.value = 'wsmall'
+    ac3.value = 'wsmall active'
+    tipColors.t0 = "#aad6fe"
+    tipColors.t1 = "#aad6fe"
+    tipColors.t2 = "#aad6fe"
+    tipColors.t3 = "#8ba9c8"
+  }
+  report.value = type
+}
 
 watch([st_time, ed_time], () => {
   disPlaySummaryInfo(st_time.value, ed_time.value)
@@ -234,7 +283,6 @@ const countForm = reactive({
 const handleClose = (done) => {
   formRef.value.resetFields()
   countForm.date = ""
-  console.log('handle close');
   done()
 }
 
@@ -253,19 +301,6 @@ const submitCount = (form) => {
     }
   })
 }
-
-const reportTip = computed(() => {
-  disPlaySummaryInfo(st_time.value, ed_time.value)
-  if (report.value == 0) {
-    return "*注:抓取次数指访问社媒平台的次数"
-  } else if (report.value == 1) {
-    return "*注:指红人链接去重后的数量"
-  } else if (report.value == 2) {
-    return "*注:指采集到的红人根据一定条件筛选后的数据量"
-  } else if (report.value == 3) {
-    return "*注:指总资源库红人更新的数据量"
-  }
-})
 
 const group = reactive({
   current: 'week',
@@ -544,22 +579,6 @@ const dateChange = (val) => {
   ed_time.value = val[1]
 }
 
-const clickReportsTab = (type) => {
-  if (type === 0) {
-    ac1.value = ac2.value = ac3.value = ''
-    ac0.value = 'active'
-  } else if (type === 1) {
-    ac0.value = ac2.value = ac3.value = ''
-    ac1.value = 'active'
-  } else if (type === 2) {
-    ac0.value = ac1.value = ac3.value = ''
-    ac2.value = 'active'
-  } else if (type === 3) {
-    ac0.value = ac1.value = ac2.value = ''
-    ac3.value = 'active'
-  }
-  report.value = type
-}
 
 
 const shortcuts = [
@@ -608,6 +627,30 @@ const shortcuts = [
   padding: 0px;
 }
 
+:deep(.diy-time) {
+  font-size: 14px;
+  background-color: #145ba4;
+  border: 0px solid red;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 8px;
+  box-shadow: 0 0 0 1px transparent;
+}
+
+:deep(.diy-time .el-range-input) {
+  color: white;
+  border-color: transparent;
+}
+
+:deep(.diy-time .el-range-separator) {
+  color: white
+}
+
+:deep(.el-range-editor:hover) {
+  box-shadow: 0 0 0 1px transparent;
+}
+
+
 .report-card {
   width: 1290px;
   margin-top: 20px;
@@ -634,7 +677,7 @@ const shortcuts = [
 }
 
 .report-header {
-  background: #F1F5F9;
+  background: linear-gradient(90deg, #38a2f4, #0c5cb6);
 }
 
 .padding-5 {
@@ -654,30 +697,8 @@ const shortcuts = [
   margin-right: 30px;
 }
 
-.week {
-  display: flex;
-  background-color: #fff;
-  padding: 7px 12px;
-  border-radius: 12px;
-  justify-content: center;
-}
-
-.week span {
-  padding: 2px 2px;
-  color: #666;
-  border-bottom: 2px solid #fff;
-  display: block;
-  margin: 0px 8px;
-  cursor: pointer;
-}
-
-.week .active {
-  color: #000;
-  border-bottom: 2px solid #000;
-}
-
 .data-tab {
-  background-color: #dff1ff;
+  background: linear-gradient(90deg, #38a2f4, #0c5cb6);
 }
 
 .data-tab ul {
@@ -685,53 +706,9 @@ const shortcuts = [
   margin: 0
 }
 
-/* .data-tab ul li {
-  background: url(@/assets/tab-bg.png) right 0px no-repeat;
-  padding: 10px;
-  height: 30px;
-  font-size: 16px;
-  min-width: 180px;
-  cursor: pointer;
-  padding-left: 30px;
-  font-weight: bold;
-  color: #51728c;
-}
-
-.data-tab ul .active {
-  background-position: right -183px;
-  color: #215883;
-} */
-
-.data-tab ul li {
-  background: url(@/assets/tab-bg1.png) right 0px no-repeat;
-  padding: 10px;
-  height: 30px;
-  font-size: 16px;
-  min-width: 180px;
-  cursor: pointer;
-  padding-left: 30px;
-  font-weight: bold;
-  color: #51728c
-}
-
-.data-tab ul .active {
-  background: url(@/assets/tab-bg2.png) right 0px no-repeat;
-  color: #ff5900;
-}
-
-.data-tab ul p {
-  margin: 0px;
-  padding: 0;
-}
-
-.data-tab ul span {
-  font-weight: bold;
-  font-size: 14px;
-  opacity: 0.9;
-}
-
-.data-cont .data-report {
-  padding: 12px;
+/* 后加入 */
+.list-inline {
+  height: 84px
 }
 
 .list-inline {
@@ -745,5 +722,152 @@ const shortcuts = [
 
 .list-inline-item:not(:last-child) {
   margin-right: .5rem
+}
+
+.data-tab {
+  padding-right: 20px;
+  position: relative;
+  z-index: 1
+}
+
+.data-tab ul {
+  display: flex;
+  margin: 0
+}
+
+.data-tab ul li {
+  flex: 1;
+  padding: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #fff;
+  margin-left: 20px;
+  padding-left: 0px;
+  border-bottom: 72px solid #0000001a;
+  border-top: 0px solid transparent;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  transition: all 0s linear;
+}
+
+.data-tab ul li:hover {
+  border-bottom: 72px solid #0000004f;
+  border-left: 25px solid transparent;
+  border-right: 25px solid transparent;
+}
+
+.data-tab ul .s-img {
+  width: 60px;
+  height: 80px;
+  background-size: 47px;
+  background-position: center;
+  background-repeat: no-repeat
+}
+
+.data-tab ul .v-vague {
+  background-image: url(@/assets/images/icon-1.png)
+}
+
+.data-tab ul .v-update {
+  background-image: url(@/assets/images/icon-2.png)
+}
+
+.data-tab ul .v-clean {
+  background-image: url(@/assets/images/icon-3.png)
+}
+
+.data-tab ul .v-warehouse {
+  background-image: url(@/assets/images/icon-4.png)
+}
+
+.data-tab ul .v-total {
+  background-image: url(@/assets/images/icon-5.png)
+}
+
+.data-tab ul .active .v-vague {
+  background-image: url(@/assets/images/icon-1-v.png)
+}
+
+.data-tab ul .active .v-update {
+  background-image: url(@/assets/images/icon-2-v.png)
+}
+
+.data-tab ul .active .v-clean {
+  background-image: url(@/assets/images/icon-3-v.png)
+}
+
+.data-tab ul .active .v-warehouse {
+  background-image: url(@/assets/images/icon-4-v.png)
+}
+
+.data-tab ul .active .v-total {
+  background-image: url(@/assets/images/icon-5-v.png)
+}
+
+
+.data-tab ul .active,
+.data-tab ul .active:hover {
+  color: #1e7ad0;
+  border-bottom: 72px solid #fff;
+  cursor: default
+}
+
+.data-tab ul .active p {
+  font-weight: bold;
+}
+
+.data-tab ul .active span {
+  color: #72a3d7
+}
+
+.data-tab ul p {
+  margin: 0px;
+  margin-top: 18px;
+  padding: 0;
+  font-size: 16px;
+  position: relative
+}
+
+.data-tab ul img {
+  position: absolute;
+  width: 48px;
+  left: -53px;
+}
+
+.data-tab ul span {
+  font-weight: bold;
+  font-size: 14px;
+  color: #a2d3ff;
+}
+
+.data-tab ul .wsmall {
+  flex: none;
+  width: 210px;
+}
+
+.week {
+  display: flex;
+  background-color: #145ba4;
+  padding: 7px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  justify-content: center;
+}
+
+.week span {
+  padding: 2px 2px;
+  color: #8db3db;
+  border-bottom: 2px solid #145ba4;
+  display: block;
+  margin: 0px 8px;
+  cursor: pointer;
+}
+
+.week .active {
+  color: #fff;
+  border-bottom: 2px solid #fff;
 }
 </style>

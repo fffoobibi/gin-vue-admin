@@ -44,7 +44,7 @@ import { nextTick, onMounted, onUnmounted, ref, watch, toRefs, reactive, compute
 import { useWindowResize } from '@/hooks/use-windows-resize'
 import { getFirstCrawlInfo, getCrawlStatsPieData, getCleanList, getTotalResourceReportsList } from '@/api/tblCrawlStats'
 import { getKolCrawlInfo } from "@/api/tblKolResource"
-import { groupData, formatNumber } from '@/utils/reports'
+import { groupData, formatNumber, fmtNumberWithUnit } from '@/utils/reports'
 
 defineOptions({
   name: 'LineReports'
@@ -170,7 +170,7 @@ const renderLineChart = (legendData, xdata, ydata) => {
       text: lineTitle?.value,
       textStyle: {
         fontSize: 14,
-        color: 'red'
+        color: '#6D99C5'
       },
       padding: [8, 15]
     },
@@ -331,12 +331,12 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
   if (chart2) {
     chart2.setOption(
       {
-        legend: {
-          type: 'scroll',
-          orient: 'vertical',
-          x: 'right',
-          // formatter: '{b}: {c} ({d}%)', // {b} 代表名称，{c} 代表值，{d} 代表百分比
-        },
+        // legend: {
+        //   type: 'scroll',
+        //   orient: 'vertical',
+        //   x: 'right',
+        //   // formatter: '{b}: {c} ({d}%)', // {b} 代表名称，{c} 代表值，{d} 代表百分比
+        // },
         tooltip: {
           trigger: "item",
           // formatter: '{b} {c} {d}%',
@@ -354,7 +354,10 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
             data: countryData,
             radius: ['40%', '70%'],
             labelLine: {
-              show: false
+              show: true,
+              length: 15,
+              length2: 5,
+              maxSurfaceAngle: 80
             },
             emphasis: {
               label: {
@@ -364,8 +367,8 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
               }
             },
             label: {
-              show: false,
-              position: 'center',
+              show: true,
+              // position: 'center',
               formatter: function (params) {
                 return params.name + "\n" + params.value;
               }
@@ -389,22 +392,19 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
             fontWeight: 'bold'
           }
         },
-        legend: {
-          show: true,
-          // orient: 'vertical',
-          // right: '0%',
-          bottom: '0%',
-          formatter: function (name) {
-            let n
-            if (name == 'TikTok') n = 'TT'
-            else if (name == 'Youtube') n = 'YTB'
-            else if (name == 'Instagram') n = 'INS'
-            return n + " " + formatNumber(platformCount(name))
-          },
-          // textStyle: {
-          //   fontWeight: "bold"
-          // }
-        },
+        // legend: {
+        //   show: true,
+        //   // orient: 'vertical',
+        //   // right: '0%',
+        //   bottom: '0%',
+        //   formatter: function (name) {
+        //     let n
+        //     if (name == 'TikTok') n = 'TT'
+        //     else if (name == 'Youtube') n = 'YTB'
+        //     else if (name == 'Instagram') n = 'INS'
+        //     return n + " " + formatNumber(platformCount(name))
+        //   },
+        // },
         series: [
           {
             alignTo: 'edge',
@@ -422,7 +422,8 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
               align: 'left',
               overflow: 'breakAll',
               formatter: function (params) {
-                return params.percent.toFixed(2) + '%'
+                console.log(params);
+                return params.name + "\n"+ params.percent.toFixed(2) + '%'
               }
               // formatter: function (params) {
               //   return params.name + " " + params.percent.toFixed(2) + '%'
@@ -436,16 +437,6 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
   if (chart4) {
     chart4.setOption(
       {
-        // dataZoom: [
-        //   {
-        //     type: 'slider',
-        //     show: true,
-        //     yAxisIndex: [0],
-        //     left: '50%',
-        //     start: 29,
-        //     end: 36
-        //   },
-        // ],
         tooltip: {
           trigger: "item",
           // formatter: '{b}: {c}',
@@ -483,8 +474,9 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
             type: 'bar',
             label: {
               show: true,
+              position: 'right',
               formatter: (params) => {
-                return formatNumber(params.value)
+                return fmtNumberWithUnit(params.value, 10000, "万")
               }
             }
           }
@@ -496,10 +488,8 @@ const renderPieCharts = (countryData, platformData, categories, categoryData, re
 
 const disPlayPieChart = async () => {
   if (props.startTime && props.endTime) {
-    // if (props.report === 0) {
     // 初次访问次数
     const resp = await getCrawlStatsPieData({ st_time: props.startTime, ed_time: props.endTime, report: props.report })
-    console.log("resp --> ", resp)
 
     const sliceCountry = resp.data.country?.slice(0, 9) ?? []
     const other = (resp.data.country ?? []).slice(9).reduce((x, y) => x.count + y.count, 0)
@@ -532,7 +522,6 @@ const disPlayPieChart = async () => {
     })
 
     renderPieCharts(country, platform, categoris, categoryData)
-    // }
   }
 
 }

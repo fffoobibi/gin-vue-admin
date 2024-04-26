@@ -104,3 +104,8 @@ function getWeekNumber(date) {
 export function formatNumber(num) {
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
+
+export function fmtNumberWithUnit(num, value, unit){
+  const v = num / value
+  return v.toFixed(2).toString() + unit
+}
